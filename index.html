@@ -6,9 +6,13 @@
     <title>Мой Трекер</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <!-- Шрифт Oswald (поддерживает русский) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0E0F12">
+    <meta name="theme-color" content="#0F1114">
 </head>
 <body>
 
@@ -19,54 +23,54 @@
                 <h1 id="month-title">Сентябрь</h1>
             </header>
 
-            <!-- Статистика: одна карточка на 4 сектора -->
-            <div class="stats-card">
-                <div class="stat">
+            <!-- Статистика: 4 серые плитки -->
+            <div class="stats-grid">
+                <div class="stat-tile">
                     <span class="stat-label">Потрачено</span>
                     <span class="stat-value" id="stat-money">0 ₽</span>
                 </div>
-                <div class="stat">
+                <div class="stat-tile">
                     <span class="stat-label">Калории</span>
                     <span class="stat-value" id="stat-calories">0 ккал</span>
                 </div>
-                <div class="stat">
+                <div class="stat-tile">
                     <span class="stat-label">🥃 Крепкое</span>
                     <span class="stat-value" id="stat-strong">0 л</span>
                 </div>
-                <div class="stat">
+                <div class="stat-tile">
                     <span class="stat-label">🍺 Пиво</span>
                     <span class="stat-value" id="stat-beer">0 л</span>
                 </div>
             </div>
 
-            <!-- Кнопки добавления -->
+            <!-- Кнопки-плитки -->
             <section class="controls">
                 <div class="control-group">
                     <span class="group-label">Алкоголь</span>
-                    <div class="btn-row">
-                        <button class="btn-add" onclick="openModal('beer')">Пиво</button>
-                        <button class="btn-add" onclick="openModal('gin')">Джин</button>
-                        <button class="btn-add" onclick="openModal('rum')">Ром</button>
-                        <button class="btn-add" onclick="openModal('whiskey')">Виски</button>
-                        <button class="btn-add" onclick="openModal('tincture')">Настойка</button>
+                    <div class="tile-grid cols-3">
+                        <button class="tile-btn" onclick="openModal('beer')">Пиво</button>
+                        <button class="tile-btn" onclick="openModal('gin')">Джин</button>
+                        <button class="tile-btn" onclick="openModal('rum')">Ром</button>
+                        <button class="tile-btn" onclick="openModal('whiskey')">Виски</button>
+                        <button class="tile-btn" onclick="openModal('tincture')">Настойка</button>
                     </div>
                 </div>
 
                 <div class="control-group">
                     <span class="group-label">Миксеры</span>
-                    <div class="btn-row">
-                        <button class="btn-add" onclick="openModal('tonic')">Тоник</button>
-                        <button class="btn-add" onclick="openModal('cola')">Кола</button>
-                        <button class="btn-add" onclick="openModal('lemonade')">Лимонад</button>
-                        <button class="btn-add" onclick="openModal('juice')">Сок</button>
+                    <div class="tile-grid cols-4">
+                        <button class="tile-btn small" onclick="openModal('tonic')">Тоник</button>
+                        <button class="tile-btn small" onclick="openModal('cola')">Кола</button>
+                        <button class="tile-btn small" onclick="openModal('lemonade')">Лимонад</button>
+                        <button class="tile-btn small" onclick="openModal('juice')">Сок</button>
                     </div>
                 </div>
 
                 <div class="control-group">
                     <span class="group-label">Еда</span>
-                    <div class="btn-row">
-                        <button class="btn-add" onclick="openModal('peanuts')">Арахис 200г</button>
-                        <button class="btn-add" onclick="openModal('other_food')">Другая еда</button>
+                    <div class="tile-grid cols-2">
+                        <button class="tile-btn" onclick="openModal('peanuts')">Арахис 200г</button>
+                        <button class="tile-btn" onclick="openModal('other_food')">Другая еда</button>
                     </div>
                 </div>
             </section>
@@ -117,8 +121,8 @@
             </div>
 
             <div class="modal-buttons">
-                <button class="btn-add" onclick="closeModal()">Отмена</button>
-                <button class="btn-add save-btn" onclick="saveEntry()">Сохранить</button>
+                <button class="tile-btn" onclick="closeModal()">Отмена</button>
+                <button class="tile-btn save-btn" onclick="saveEntry()">Сохранить</button>
             </div>
         </div>
     </div>
