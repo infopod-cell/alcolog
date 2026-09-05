@@ -1,11 +1,12 @@
 :root {
-    --bg: #0F1114;          /* тёмный фон */
-    --tile: #262B33;        /* серые плитки */
-    --tile-press: #333945;  /* плитка при нажатии */
-    --nav: #14171C;         /* нижняя панель */
+    --bg: #0F1114;
+    --tile: #262B33;
+    --tile-press: #333945;
+    --nav: #14171C;
     --text: #F4F5F7;
     --muted: #9AA0A8;
-    --accent: #E6A93C;      /* янтарный */
+    --accent: #E6A93C;      /* янтарный = пиво */
+    --strong: #5B8DEF;      /* стальной синий = крепкое */
     --danger: #E5484D;
 }
 
@@ -40,7 +41,7 @@ h1 {
     letter-spacing: 0.02em;
 }
 
-/* СТАТИСТИКА: серые плитки 2x2 */
+/* СТАТИСТИКА */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -51,7 +52,7 @@ h1 {
 .stat-tile {
     background: var(--tile);
     border-radius: 14px;
-    padding: 16px 10px;
+    padding: 12px 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -67,8 +68,8 @@ h1 {
 }
 
 .stat-value {
-    font-size: 1.3rem;
-    font-weight: 500;
+    font-size: 1.4rem;
+    font-weight: 600;
 }
 
 /* КНОПКИ-ПЛИТКИ */
@@ -102,8 +103,131 @@ h1 {
 }
 
 .tile-btn.small { font-size: 0.85rem; padding: 13px 2px; }
-
 .tile-btn:active { background: var(--tile-press); }
+
+/* КАЛЕНДАРЬ */
+.cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.cal-header h1 { font-size: 1.25rem; }
+
+.cal-nav {
+    background: var(--tile);
+    border: none;
+    color: var(--text);
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+.cal-nav:active { background: var(--tile-press); }
+
+.cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.cal-weekdays span {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.day-tile {
+    background: var(--tile);
+    border: none;
+    border-radius: 10px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.day-tile:active { background: var(--tile-press); }
+
+.day-num { font-size: 0.9rem; font-weight: 500; }
+
+.day-empty { aspect-ratio: 1; }
+
+.day-tile.today { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.day-tile.selected { background: var(--tile-press); box-shadow: inset 0 0 0 1.5px var(--text); }
+
+/* Точки-маркеры */
+.day-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.day-dot.none { background: transparent; }
+.day-dot.beer { background: var(--accent); }
+.day-dot.strong { background: var(--strong); }
+.day-dot.both { background: linear-gradient(90deg, var(--accent) 50%, var(--strong) 50%); }
+
+.cal-legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.cal-summary {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+}
+.cal-summary b { color: var(--text); font-weight: 600; }
+
+/* Детали дня */
+.day-details h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 10px;
+}
+
+.day-hint {
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 12px 0;
+}
+
+.day-list { list-style: none; margin: 0; padding: 0; }
+
+.day-totals {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    text-align: right;
+}
 
 /* НИЖНИЕ ВКЛАДКИ */
 .bottom-nav {
@@ -126,7 +250,7 @@ h1 {
     align-items: center;
     gap: 4px;
     padding: 10px 0 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.05em;
     cursor: pointer;
@@ -199,11 +323,7 @@ h1 {
     padding: 20px;
 }
 
-.modal h3 {
-    margin: 0 0 16px;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
+.modal h3 { margin: 0 0 16px; font-size: 1.2rem; font-weight: 600; }
 
 .input-group { margin-bottom: 14px; }
 
@@ -241,8 +361,5 @@ h1 {
 .modal-buttons { display: flex; gap: 10px; }
 .modal-buttons .tile-btn { flex: 1; }
 
-.save-btn {
-    background: var(--accent);
-    color: #141414;
-}
+.save-btn { background: var(--accent); color: #141414; }
 .save-btn:active { background: #f0b755; }
