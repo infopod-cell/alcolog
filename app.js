@@ -121,7 +121,7 @@ function renderCalendar() {
         let dot = 'none';
         if (marker) dot = (marker.beer && marker.strong) ? 'both' : (marker.beer ? 'beer' : 'strong');
 
-        btn.innerHTML = '<span class="day-num">' + d + '</span><span class="day-dot ' + dot + '"></span>';
+        btn.innerHTML = '<span class="day-num">' + d + '</span><span class="day-bar ' + dot + '"></span>';
         btn.onclick = () => selectDay(key);
         grid.appendChild(btn);
     }
