@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мой Трекер</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <!-- Для iOS чтобы работало как приложение -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#121212">
+</head>
+<body>
+
+    <div class="container">
+        <!-- СТАТИСТИКА ЗА МЕСЯЦ -->
+        <header>
+            <h1>Статистика за месяц</h1>
+            <div class="stats-grid">
+                <div class="stat-card money">
+                    <span class="label">Потрачено</span>
+                    <span class="value" id="stat-money">0 ₽</span>
+                </div>
+                <div class="stat-card calories">
+                    <span class="label">Калории</span>
+                    <span class="value" id="stat-calories">0 ккал</span>
+                </div>
+                <div class="stat-card strong">
+                    <span class="label">🥃 Крепкое</span>
+                    <span class="value" id="stat-strong">0 л</span>
+                </div>
+                <div class="stat-card beer">
+                    <span class="label">🍺 Пиво</span>
+                    <span class="value" id="stat-beer">0 л</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ИСТОРИЯ -->
+        <section class="history-section">
+            <div class="history-header">
+                <h2>История</h2>
+                <button id="clear-history-btn" class="small-btn">Очистить всё</button>
+            </div>
+            <ul id="history-list">
+                <!-- Записи появятся здесь -->
+            </ul>
+        </section>
+    </div>
+
+    <!-- ПАНЕЛЬ КНОПОК (Прибита к низу) -->
+    <nav class="controls">
+        <div class="control-group">
+            <span class="group-label">Алкоголь</span>
+            <div class="btn-row">
+                <button class="btn drink-btn" onclick="openModal('beer')">🍺 Пиво</button>
+                <button class="btn drink-btn" onclick="openModal('gin')">🍸 Джин</button>
+                <button class="btn drink-btn" onclick="openModal('rum')">🥃 Ром</button>
+                <button class="btn drink-btn" onclick="openModal('whiskey')">🥃 Виски</button>
+                <button class="btn drink-btn" onclick="openModal('tincture')">🍶 Настойка</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <span class="group-label">Миксеры</span>
+            <div class="btn-row">
+                <button class="btn mixer-btn" onclick="openModal('tonic')">Тоник</button>
+                <button class="btn mixer-btn" onclick="openModal('cola')">Кола</button>
+                <button class="btn mixer-btn" onclick="openModal('lemonade')">Лимонад</button>
+                <button class="btn mixer-btn" onclick="openModal('juice')">Сок</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <span class="group-label">Еда</span>
+            <div class="btn-row">
+                <button class="btn food-btn" onclick="openModal('peanuts')">🥜 Арахис 200г</button>
+                <button class="btn food-btn" onclick="openModal('other_food')">🍕 Другая еда</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- МОДАЛЬНОЕ ОКНО ВВОДА -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <h3 id="modal-title">Добавить</h3>
+            
+            <div class="input-group">
+                <label id="volume-label">Объем (мл)</label>
+                <input type="number" id="input-volume" value="500" min="0" step="50" inputmode="numeric">
+            </div>
+
+            <div class="input-group">
+                <label>Цена (₽)</label>
+                <input type="number" id="input-price" value="0" min="0" inputmode="numeric">
+            </div>
+
+            <div class="modal-info">
+                Калорийность: ~<span id="modal-calories">0</span> ккал
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn cancel-btn" onclick="closeModal()">Отмена</button>
+                <button class="btn save-btn" onclick="saveEntry()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
