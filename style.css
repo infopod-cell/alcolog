@@ -1,0 +1,164 @@
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #ffffff;
+    --accent-beer: #f39c12;
+    --accent-strong: #e74c3c;
+    --accent-money: #2ecc71;
+    --accent-cal: #9b59b6;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    padding-bottom: 220px; /* Отступ, чтобы кнопки не перекрывали историю */
+}
+
+.container {
+    padding: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+h1 { font-size: 1.2rem; margin-bottom: 15px; opacity: 0.8; }
+h2 { font-size: 1rem; margin: 10px 0; opacity: 0.7; }
+
+/* СТАТИСТИКА */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.stat-card .label { font-size: 0.8rem; opacity: 0.7; margin-bottom: 5px; }
+.stat-card .value { font-size: 1.4rem; font-weight: bold; }
+
+.money .value { color: var(--accent-money); }
+.calories .value { color: var(--accent-cal); }
+.strong .value { color: var(--accent-strong); }
+.beer .value { color: var(--accent-beer); }
+
+/* ИСТОРИЯ */
+.history-section { margin-top: 20px; }
+.history-header { display: flex; justify-content: space-between; align-items: center; }
+.small-btn { background: #333; border: none; color: #aaa; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
+
+#history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.history-item {
+    background: var(--card-bg);
+    margin-bottom: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.history-details { display: flex; flex-direction: column; }
+.history-meta { font-size: 0.75rem; opacity: 0.6; margin-top: 3px; }
+.delete-btn { background: none; border: none; color: #e74c3c; font-size: 1.2rem; padding: 5px; }
+
+/* КНОПКИ УПРАВЛЕНИЯ */
+.controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #181818;
+    border-top: 1px solid #333;
+    padding: 10px 15px 25px 15px;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.control-group { margin-bottom: 10px; }
+.group-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.5; display: block; margin-bottom: 5px; }
+
+.btn-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none; /* Firefox */
+}
+.btn-row::-webkit-scrollbar { display: none; } /* Chrome */
+
+.btn {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.1s;
+    background: #333;
+}
+.btn:active { transform: scale(0.95); }
+
+.drink-btn { background: #2c3e50; }
+.mixer-btn { background: #16a085; }
+.food-btn { background: #d35400; }
+
+/* МОДАЛКА */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal {
+    background: var(--card-bg);
+    width: 90%;
+    max-width: 350px;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal h3 { margin-top: 0; }
+
+.input-group { margin-bottom: 15px; }
+.input-group label { display: block; font-size: 0.8rem; opacity: 0.7; margin-bottom: 5px; }
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: white;
+    font-size: 1.1rem;
+    box-sizing: border-box;
+}
+
+.modal-info { font-size: 0.85rem; opacity: 0.8; margin-bottom: 20px; text-align: center; }
+
+.modal-buttons { display: flex; gap: 10px; }
+.modal-buttons .btn { flex: 1; }
+.cancel-btn { background: #444; }
+.save-btn { background: var(--accent-money); color: #000; }
