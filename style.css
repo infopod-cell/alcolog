@@ -158,29 +158,42 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
 .day-tile:active { background: var(--tile-press); }
 
-.day-num { font-size: 0.9rem; font-weight: 500; }
+.day-num { font-size: 0.95rem; font-weight: 500; color: #C7CCD4; }
 
 .day-empty { aspect-ratio: 1; }
 
 .day-tile.today { box-shadow: inset 0 0 0 1.5px var(--accent); }
 .day-tile.selected { background: var(--tile-press); box-shadow: inset 0 0 0 1.5px var(--text); }
 
-/* Точки-маркеры */
-.day-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+/* Полоски-маркеры */
+.day-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 5px;
 }
-.day-dot.none { background: transparent; }
-.day-dot.beer { background: var(--accent); }
-.day-dot.strong { background: var(--strong); }
-.day-dot.both { background: linear-gradient(90deg, var(--accent) 50%, var(--strong) 50%); }
+.day-bar.none { background: transparent; }
+.day-bar.beer { background: var(--accent); }
+.day-bar.strong { background: var(--strong); }
+.day-bar.both { background: linear-gradient(90deg, var(--accent) 50%, var(--strong) 50%); }
+
+.legend-bar {
+    width: 16px;
+    height: 5px;
+    border-radius: 3px;
+    display: inline-block;
+}
+.legend-bar.beer { background: var(--accent); }
+.legend-bar.strong { background: var(--strong); }
+.legend-bar.both { background: linear-gradient(90deg, var(--accent) 50%, var(--strong) 50%); }
 
 .cal-legend {
     display: flex;
