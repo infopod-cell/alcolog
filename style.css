@@ -423,3 +423,23 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0; letter-spacing: 0.02em; }
     font-size: 0.95rem;
     line-height: 1.6;
 }
+/* Две плитки денег */
+.stats-grid.two { grid-template-columns: 1fr 1fr; }
+.stats-grid.two .stat-value { font-size: 1.3rem; }
+
+/* Простой список записей дня */
+.day-plain { list-style: none; margin: 0; padding: 0; }
+.day-plain li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 2px;
+}
+.dp-text { font-size: 1rem; font-weight: 500; }
+.dp-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
