@@ -1,4 +1,4 @@
-// БАЗА ПРОДУКТОВ (тип: beer / wine / strong / mixer)
+// БАЗА ПРОДУКТОВ
 const PRODUCTS = {
     beer:      { name: 'Пиво',      type: 'beer',   defVol: 1 },
     gin:       { name: 'Джин',      type: 'strong', defVol: 0.5 },
@@ -25,10 +25,10 @@ const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','
 let entries = JSON.parse(localStorage.getItem('drinkTrackerData')) || [];
 let memory = JSON.parse(localStorage.getItem('drinkTrackerMemory')) || {};
 
-let viewYear, viewMonth;
+let viewYear, viewMonth;          // календарь
+let viewYearA;                    // аналитика
 let selectedDayKey = null;
 
-// Шторка
 let sheet = { dateKey: null, rows: [] };
 let rowSeq = 0;
 let pickerTarget = null;
@@ -37,16 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
+    viewYearA = now.getFullYear();
 
     render();
-
-    document.getElementById('clear-history-btn').addEventListener('click', () => {
-        if (confirm('Удалить всю историю? Это действие нельзя отменить.')) {
-            entries = [];
-            saveData();
-            render();
-        }
-    });
 
     document.getElementById('sheet-overlay').addEventListener('click', e => {
         if (e.target.id === 'sheet-overlay') closeSheet();
@@ -54,11 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('picker-overlay').addEventListener('click', e => {
         if (e.target.id === 'picker-overlay') closePicker();
     });
+    document.getElementById('restore-file').addEventListener('change', handleRestore);
 });
 
-
 function switchTab(tab) {
-    ['home', 'calendar', 'history'].forEach(t => {
+    ['home', 'calendar', 'analytics', 'save'].forEach(t => {
         document.getElementById('screen-' + t).classList.toggle('active', t === tab);
         document.getElementById('tab-' + t).classList.toggle('active', t === tab);
     });
@@ -76,10 +69,9 @@ function parseKey(key) {
 
 function entryLiters(e) { return e.unit === 'l' ? e.volume : e.volume / 1000; }
 
-function fmtEntryVol(e) {
-    const l = entryLiters(e);
-    return (Math.round(l * 100) / 100) + ' л';
-}
+function fmtEntryVol(e) { return (Math.round(entryLiters(e) * 100) / 100) + ' л'; }
+
+function fmtL(l) { return Math.round(l * 100) / 100; }
 
 function formatNumber(n) { return Math.round(n).toLocaleString('ru-RU'); }
 
@@ -191,7 +183,7 @@ function renderDayDetails() {
 
     if (dayEntries.length) {
         let money = 0, items = '';
-                dayEntries.forEach(e => {
+        dayEntries.forEach(e => {
             money += e.price;
             items += '<li><span class="dp-text">' + e.name + ', ' + fmtEntryVol(e) + '</span>' +
                 '<span class="dp-right">' + formatNumber(e.price) + ' ₽' +
@@ -218,10 +210,141 @@ function deleteEntry(id) {
 
 function deleteDay(key) {
     if (!confirm('Удалить все записи за этот день?')) return;
-    const keys = getDayEntries(key).map(e => e.id);
-    entries = entries.filter(e => !keys.includes(e.id));
+    const ids = getDayEntries(key).map(e => e.id);
+    entries = entries.filter(e => !ids.includes(e.id));
     saveData();
     render();
+}
+
+// ========== АНАЛИТИКА ==========
+
+function changeYear(delta) {
+    viewYearA += delta;
+    renderAnalytics();
+}
+
+function monthStats(year, month) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const now = new Date();
+    const isCurrent = year === now.getFullYear() && month === now.getMonth();
+    const elapsed = isCurrent ? now.getDate() : daysInMonth;
+
+    let money = 0, beer = 0, wine = 0, strong = 0;
+    const daySet = new Set();
+
+    entries.forEach(e => {
+        const d = new Date(e.timestamp);
+        if (d.getFullYear() !== year || d.getMonth() !== month) return;
+        money += e.price;
+        const l = entryLiters(e);
+        if (e.type === 'beer') beer += l;
+        if (e.type === 'wine') wine += l;
+        if (e.type === 'strong') strong += l;
+        if (e.type === 'beer' || e.type === 'wine' || e.type === 'strong') daySet.add(d.getDate());
+    });
+
+    const drinking = daySet.size;
+    return {
+        month, money, beer, wine, strong,
+        liters: beer + wine + strong,
+        drinking,
+        sober: Math.max(0, elapsed - drinking)
+    };
+}
+
+function renderAnalytics() {
+    document.getElementById('year-title').textContent = viewYearA;
+    const box = document.getElementById('months-list');
+    box.innerHTML = '';
+
+    const now = new Date();
+
+    if (viewYearA > now.getFullYear()) {
+        box.innerHTML = '<div class="day-hint">В этом году данных пока нет.</div>';
+        return;
+    }
+
+    const maxMonth = (viewYearA === now.getFullYear()) ? now.getMonth() : 11;
+
+    let months = [];
+    let maxLiters = 0;
+    for (let m = 0; m <= maxMonth; m++) {
+        const md = monthStats(viewYearA, m);
+        months.push(md);
+        if (md.liters > maxLiters) maxLiters = md.liters;
+    }
+
+    // Свежие месяцы сверху
+    months.reverse().forEach(md => {
+        const max = maxLiters > 0 ? maxLiters : 1;
+        const wBeer = (md.beer / max) * 100;
+        wWine = (md.wine / max) * 100;
+        const wStrong = (md.strong / max) * 100;
+
+        let bar = '';
+        if (md.beer) bar += '<span class="seg beer" style="width:' + wBeer + '%"></span>';
+        if (md.wine) bar += '<span class="seg wine" style="width:' + wWine + '%"></span>';
+        if (md.strong) bar += '<span class="seg strong" style="width:' + wStrong + '%"></span>';
+
+        const tile = document.createElement('div');
+        tile.className = 'month-tile';
+        tile.innerHTML =
+            '<div class="month-head"><span class="month-name">' + MONTH_NAMES[md.month] + '</span>' +
+            '<span class="month-money">' + formatNumber(md.money) + ' ₽</span></div>' +
+            '<div class="month-bar-row"><div class="month-bar">' + bar + '</div>' +
+            '<span class="month-liters">' + fmtL(md.liters) + ' л</span></div>' +
+            '<div class="month-types">Пиво ' + fmtL(md.beer) + ' · Вино ' + fmtL(md.wine) + ' · Крепкое ' + fmtL(md.strong) + '</div>' +
+            '<div class="month-days">Дней с алкоголем: ' + md.drinking + ' · Трезвых: ' + md.sober + '</div>';
+        box.appendChild(tile);
+    });
+}
+
+// ========== СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ ==========
+
+function exportData() {
+    const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date();
+    a.href = url;
+    a.download = 'alkogolik-backup-' + d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0') + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function handleRestore(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const data = JSON.parse(reader.result);
+            if (!Array.isArray(data)) throw new Error('bad format');
+
+            const ids = new Set(entries.map(x => x.id));
+            let added = 0;
+            data.forEach(item => {
+                if (item && item.timestamp && item.name && !ids.has(item.id)) {
+                    entries.push(item);
+                    ids.add(item.id);
+                    added++;
+                }
+            });
+
+            saveData();
+            render();
+            alert('Готово! Добавлено записей: ' + added);
+        } catch (err) {
+            alert('Не удалось прочитать файл. Убедись, что это файл резервной копии.');
+        }
+        e.target.value = '';
+    };
+    reader.readAsText(file);
 }
 
 // ========== ШТОРКА ЗАПИСИ ==========
@@ -262,13 +385,11 @@ function renderSheetRows() {
             const div = document.createElement('div');
             div.className = 'entry-row';
 
-            // Продукт
             const prodBtn = document.createElement('button');
             prodBtn.className = 'field-pick row-product';
             prodBtn.textContent = r.product ? PRODUCTS[r.product].name : 'Выбрать ▾';
             prodBtn.onclick = () => openPicker(r.id, 'product');
 
-            // Объем
             let volEl;
             if (r.customVol) {
                 volEl = document.createElement('input');
@@ -287,7 +408,6 @@ function renderSheetRows() {
                 volEl.onclick = () => openPicker(r.id, 'volume');
             }
 
-            // Цена
             const priceIn = document.createElement('input');
             priceIn.className = 'row-price';
             priceIn.placeholder = '₽';
@@ -295,7 +415,6 @@ function renderSheetRows() {
             priceIn.value = r.price;
             priceIn.oninput = () => { r.price = priceIn.value; updateTotal(); };
 
-            // Удалить строку
             const del = document.createElement('button');
             del.className = 'row-del';
             del.textContent = '×';
@@ -356,7 +475,6 @@ function pickOption(value) {
         row.product = value;
         const mem = memory[value];
         if (mem && mem.volume) {
-            // Память: подставляем прошлые объем и цену
             row.customVol = false;
             row.volume = mem.volume;
             row.price = mem.price || '';
@@ -377,8 +495,6 @@ function pickOption(value) {
     closePicker();
     renderSheetRows();
 }
-
-// ========== СОХРАНЕНИЕ ==========
 
 function saveSheet() {
     const valid = sheet.rows.filter(r => r.product && r.volume > 0);
@@ -404,7 +520,6 @@ function saveSheet() {
             price: price
         });
 
-        // Запоминаем объем и цену для продукта
         memory[r.product] = { volume: r.volume, price: price };
     });
 
@@ -450,7 +565,7 @@ function render() {
         if (entry.type === 'strong') stats.strong += entryLiters(entry);
     });
 
-        let moneyAll = 0;
+    let moneyAll = 0;
     entries.forEach(e => { moneyAll += e.price; });
 
     document.getElementById('stat-money-month').textContent = formatNumber(stats.money) + ' ₽';
@@ -463,30 +578,7 @@ function render() {
     document.getElementById('home-summary').innerHTML =
         'Дней с алкоголем: <b>' + counts.drinking + '</b> · Трезвых: <b>' + counts.sober + '</b>';
 
-    // История
-    const list = document.getElementById('history-list');
-    list.innerHTML = '';
-
-    const sorted = [...entries].reverse();
-    document.getElementById('history-empty').style.display = sorted.length ? 'none' : 'block';
-
-    sorted.forEach(entry => {
-        const date = new Date(entry.timestamp);
-        const dateStr = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) +
-            ' ' + date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-
-        const li = document.createElement('li');
-        li.className = 'history-item';
-        li.innerHTML = `
-            <div class="history-details">
-                <span class="history-name">${entry.name}, ${fmtEntryVol(entry)}</span>
-                <span class="history-meta">${dateStr} · ${formatNumber(entry.price)} ₽</span>
-            </div>
-            <button class="delete-btn" onclick="deleteEntry(${entry.id})">×</button>
-        `;
-        list.appendChild(li);
-    });
-
     renderCalendar();
     renderDayDetails();
+    renderAnalytics();
 }
