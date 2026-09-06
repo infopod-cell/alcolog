@@ -5,8 +5,8 @@
     --nav: #14171C;
     --text: #F4F5F7;
     --muted: #9AA0A8;
-    --accent: #E6A93C;      /* янтарный = пиво */
-    --strong: #5B8DEF;      /* стальной синий = крепкое */
+    --accent: #E6A93C;
+    --strong: #5B8DEF;
     --danger: #E5484D;
 }
 
@@ -46,7 +46,7 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-bottom: 26px;
+    margin-bottom: 10px;
 }
 
 .stat-tile {
@@ -72,9 +72,17 @@ h1 {
     font-weight: 600;
 }
 
-/* КНОПКИ-ПЛИТКИ */
-.control-group { margin-bottom: 18px; }
+.summary-tile {
+    background: var(--tile);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+.summary-tile b { color: var(--text); font-weight: 600; }
 
+/* ПЛИТКИ (используются в шторке) */
 .group-label {
     display: block;
     font-size: 0.75rem;
@@ -104,6 +112,7 @@ h1 {
 
 .tile-btn.small { font-size: 0.85rem; padding: 13px 2px; }
 .tile-btn:active { background: var(--tile-press); }
+.sheet-product.selected { box-shadow: inset 0 0 0 2px var(--accent); }
 
 /* КАЛЕНДАРЬ */
 .cal-header {
@@ -185,21 +194,11 @@ h1 {
 .day-bar.strong { background: var(--strong); }
 .day-bar.both { background: linear-gradient(90deg, var(--accent) 50%, var(--strong) 50%); }
 
-.legend-bar {
-    width: 16px;
-    height: 5px;
-    border-radius: 3px;
-    display: inline-block;
-}
-.legend-bar.beer { background: var(--accent); }
-.legend-bar.strong { background: var(--strong); }
-.legend-bar.both { background: linear-gradient(90deg, var(--accent) 50%, var(--strong) 50%); }
-
 .cal-legend {
     display: flex;
     justify-content: center;
     gap: 16px;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
 }
 
@@ -211,13 +210,15 @@ h1 {
     font-size: 0.8rem;
 }
 
-.cal-summary {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 18px;
+.legend-bar {
+    width: 16px;
+    height: 5px;
+    border-radius: 3px;
+    display: inline-block;
 }
-.cal-summary b { color: var(--text); font-weight: 600; }
+.legend-bar.beer { background: var(--accent); }
+.legend-bar.strong { background: var(--strong); }
+.legend-bar.both { background: linear-gradient(90deg, var(--accent) 50%, var(--strong) 50%); }
 
 /* Детали дня */
 .day-details h2 {
@@ -241,6 +242,94 @@ h1 {
     margin-top: 10px;
     text-align: right;
 }
+
+.add-btn {
+    width: 100%;
+    margin-top: 12px;
+    background: var(--tile);
+    border: none;
+    color: var(--accent);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.add-btn:active { background: var(--tile-press); }
+
+/* ШТОРКА ЗАПИСИ */
+.sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+}
+
+.sheet {
+    background: var(--nav);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 600px;
+    padding: 12px 16px 24px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.sheet-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--tile-press);
+    margin: 0 auto 12px;
+}
+
+.sheet h3 { margin: 0 0 14px; font-size: 1.15rem; font-weight: 600; }
+
+.sheet .group-label { margin-top: 12px; }
+
+.input-row { display: flex; gap: 10px; margin-top: 16px; }
+.input-row .input-group { flex: 1; margin-bottom: 0; }
+
+.input-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.input-group input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--tile);
+    border: none;
+    border-radius: 10px;
+    color: var(--text);
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.input-group input:focus { outline: 2px solid var(--accent); }
+
+.sheet-info {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 14px 0;
+}
+
+.sheet-buttons { display: flex; gap: 10px; }
+.sheet-buttons .tile-btn { flex: 1; }
+
+.save-btn { background: var(--accent); color: #141414; }
+.save-btn:active { background: #f0b755; }
 
 /* НИЖНИЕ ВКЛАДКИ */
 .bottom-nav {
@@ -316,63 +405,3 @@ h1 {
     font-size: 0.95rem;
     line-height: 1.6;
 }
-
-/* ОКНО ВВОДА */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-}
-
-.modal {
-    background: var(--nav);
-    border-radius: 16px;
-    width: calc(100% - 48px);
-    max-width: 340px;
-    padding: 20px;
-}
-
-.modal h3 { margin: 0 0 16px; font-size: 1.2rem; font-weight: 600; }
-
-.input-group { margin-bottom: 14px; }
-
-.input-group label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 6px;
-}
-
-.input-group input {
-    width: 100%;
-    box-sizing: border-box;
-    background: var(--tile);
-    border: none;
-    border-radius: 10px;
-    color: var(--text);
-    padding: 12px;
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-
-.input-group input:focus { outline: 2px solid var(--accent); }
-
-.modal-info {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 16px;
-}
-
-.modal-buttons { display: flex; gap: 10px; }
-.modal-buttons .tile-btn { flex: 1; }
-
-.save-btn { background: var(--accent); color: #141414; }
-.save-btn:active { background: #f0b755; }
