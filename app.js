@@ -278,7 +278,7 @@ function renderAnalytics() {
     months.reverse().forEach(md => {
         const max = maxLiters > 0 ? maxLiters : 1;
         const wBeer = (md.beer / max) * 100;
-        wWine = (md.wine / max) * 100;
+        const wWine = (md.wine / max) * 100;
         const wStrong = (md.strong / max) * 100;
 
         let bar = '';
