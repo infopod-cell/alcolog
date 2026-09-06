@@ -443,3 +443,29 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0; letter-spacing: 0.02em; }
     color: var(--muted);
     font-size: 0.9rem;
 }
+/* Единый блок «Потрачено» с двумя колонками */
+.money-block { margin-bottom: 10px; }
+
+.money-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+}
+
+.money-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.money-col + .money-col { border-left: 1px solid var(--border); }
+
+.money-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
+
+.money-block .stat-value { font-size: 1.4rem; }
