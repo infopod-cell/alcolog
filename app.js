@@ -191,15 +191,13 @@ function renderDayDetails() {
 
     if (dayEntries.length) {
         let money = 0, items = '';
-        dayEntries.forEach(e => {
+                dayEntries.forEach(e => {
             money += e.price;
-            items += '<li class="history-item"><div class="history-details">' +
-                '<span class="history-name">' + e.name + ', ' + fmtEntryVol(e) + '</span>' +
-                '<span class="history-meta">' + formatNumber(e.price) + ' ₽</span>' +
-                '</div>' +
-                '<button class="delete-btn" onclick="deleteEntry(' + e.id + ')">×</button></li>';
+            items += '<li><span class="dp-text">' + e.name + ', ' + fmtEntryVol(e) + '</span>' +
+                '<span class="dp-right">' + formatNumber(e.price) + ' ₽' +
+                '<button class="delete-btn" onclick="deleteEntry(' + e.id + ')">×</button></span></li>';
         });
-        html += '<ul class="day-list">' + items + '</ul>';
+        html += '<ul class="day-plain">' + items + '</ul>';
         html += '<div class="day-totals">Итого: ' + formatNumber(money) + ' ₽</div>';
     } else {
         html += '<div class="day-hint">В этот день записей нет.</div>';
