@@ -452,7 +452,11 @@ function render() {
         if (entry.type === 'strong') stats.strong += entryLiters(entry);
     });
 
-    document.getElementById('stat-money').textContent = formatNumber(stats.money) + ' ₽';
+        let moneyAll = 0;
+    entries.forEach(e => { moneyAll += e.price; });
+
+    document.getElementById('stat-money-month').textContent = formatNumber(stats.money) + ' ₽';
+    document.getElementById('stat-money-all').textContent = formatNumber(moneyAll) + ' ₽';
     document.getElementById('stat-beer').textContent = stats.beer.toFixed(2) + ' л';
     document.getElementById('stat-wine').textContent = stats.wine.toFixed(2) + ' л';
     document.getElementById('stat-strong').textContent = stats.strong.toFixed(2) + ' л';
