@@ -1,30 +1,37 @@
-// БАЗА ПРОДУКТОВ (Калории на 100 мл / 100 г)
+// БАЗА ПРОДУКТОВ (тип: beer / wine / strong / mixer)
 const PRODUCTS = {
-    beer:       { name: 'Пиво',      type: 'beer',   kcal: 45,  unit: 'ml', defaultVolume: 500 },
-    gin:        { name: 'Джин',      type: 'strong', kcal: 220, unit: 'ml', defaultVolume: 500 },
-    rum:        { name: 'Ром',       type: 'strong', kcal: 220, unit: 'ml', defaultVolume: 500 },
-    whiskey:    { name: 'Виски',     type: 'strong', kcal: 220, unit: 'ml', defaultVolume: 500 },
-    tincture:   { name: 'Настойка',  type: 'strong', kcal: 250, unit: 'ml', defaultVolume: 500 },
+    beer:      { name: 'Пиво',      type: 'beer',   defVol: 1 },
+    gin:       { name: 'Джин',      type: 'strong', defVol: 0.5 },
+    rum:       { name: 'Ром',       type: 'strong', defVol: 0.5 },
+    whiskey:   { name: 'Виски',     type: 'strong', defVol: 0.5 },
+    tincture:  { name: 'Настойка',  type: 'strong', defVol: 0.5 },
+    wine:      { name: 'Вино',      type: 'wine',   defVol: 0.7 },
+    cognac:    { name: 'Коньяк',    type: 'strong', defVol: 0.5 },
 
-    tonic:      { name: 'Тоник',     type: 'mixer',  kcal: 35,  unit: 'ml', defaultVolume: 500 },
-    cola:       { name: 'Кола',      type: 'mixer',  kcal: 42,  unit: 'ml', defaultVolume: 500 },
-    lemonade:   { name: 'Лимонад',   type: 'mixer',  kcal: 40,  unit: 'ml', defaultVolume: 500 },
-    juice:      { name: 'Сок',       type: 'mixer',  kcal: 45,  unit: 'ml', defaultVolume: 500 },
-
-    peanuts:    { name: 'Арахис',    type: 'food',   kcal: 570, unit: 'g',  defaultVolume: 200 },
-    other_food: { name: 'Еда',       type: 'food',   kcal: 250, unit: 'g',  defaultVolume: 200 }
+    tonic:     { name: 'Тоник',     type: 'mixer',  defVol: 0.5 },
+    cola:      { name: 'Кола',      type: 'mixer',  defVol: 0.5 },
+    lemonade:  { name: 'Лимонад',   type: 'mixer',  defVol: 0.5 },
+    juice:     { name: 'Сок',       type: 'mixer',  defVol: 0.5 },
+    energy:    { name: 'Энергетик', type: 'mixer',  defVol: 0.45 }
 };
+
+const ALC_KEYS = ['beer', 'gin', 'rum', 'whiskey', 'tincture', 'wine', 'cognac'];
+const MIX_KEYS = ['tonic', 'cola', 'lemonade', 'juice', 'energy'];
+const VOL_OPTIONS = [0.33, 0.5, 0.7, 1, 1.5, 2, 3];
 
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь',
                      'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
 let entries = JSON.parse(localStorage.getItem('drinkTrackerData')) || [];
+let memory = JSON.parse(localStorage.getItem('drinkTrackerMemory')) || {};
 
-// Состояние календаря и шторки
 let viewYear, viewMonth;
 let selectedDayKey = null;
-let sheetDateKey = null;
-let sheetProductKey = null;
+
+// Шторка
+let sheet = { dateKey: null, rows: [] };
+let rowSeq = 0;
+let pickerTarget = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
@@ -42,11 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('input-volume').addEventListener('input', updateSheetCalories);
-
-    // Закрытие шторки тапом по фону
-    document.getElementById('sheet-overlay').addEventListener('click', (e) => {
+    document.getElementById('sheet-overlay').addEventListener('click', e => {
         if (e.target.id === 'sheet-overlay') closeSheet();
+    });
+    document.getElementById('picker-overlay').addEventListener('click', e => {
+        if (e.target.id === 'picker-overlay') closePicker();
     });
 });
 
@@ -56,7 +63,6 @@ function setMonthTitle() {
         name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-// ВКЛАДКИ
 function switchTab(tab) {
     ['home', 'calendar', 'history'].forEach(t => {
         document.getElementById('screen-' + t).classList.toggle('active', t === tab);
@@ -65,7 +71,7 @@ function switchTab(tab) {
     window.scrollTo(0, 0);
 }
 
-// ========== КАЛЕНДАРЬ ==========
+// ========== ВСПОМОГАТЕЛЬНЫЕ ==========
 
 function dateKey(y, m, d) { return y + '-' + m + '-' + d; }
 
@@ -74,15 +80,27 @@ function parseKey(key) {
     return { y: p[0], m: p[1], d: p[2] };
 }
 
+function entryLiters(e) { return e.unit === 'l' ? e.volume : e.volume / 1000; }
+
+function fmtEntryVol(e) {
+    const l = entryLiters(e);
+    return (Math.round(l * 100) / 100) + ' л';
+}
+
+function formatNumber(n) { return Math.round(n).toLocaleString('ru-RU'); }
+
+function saveData() { localStorage.setItem('drinkTrackerData', JSON.stringify(entries)); }
+
+// ========== КАЛЕНДАРЬ ==========
+
 function getMarkerMap() {
     const map = {};
     entries.forEach(e => {
-        if (e.type !== 'beer' && e.type !== 'strong') return;
+        if (e.type !== 'beer' && e.type !== 'wine' && e.type !== 'strong') return;
         const d = new Date(e.timestamp);
         const key = dateKey(d.getFullYear(), d.getMonth(), d.getDate());
-        if (!map[key]) map[key] = { beer: false, strong: false };
-        if (e.type === 'beer') map[key].beer = true;
-        else map[key].strong = true;
+        if (!map[key]) map[key] = { beer: false, wine: false, strong: false };
+        map[key][e.type] = true;
     });
     return map;
 }
@@ -134,10 +152,15 @@ function renderCalendar() {
         }
         if (selectedDayKey === key) btn.classList.add('selected');
 
-        let bar = 'none';
-        if (marker) bar = (marker.beer && marker.strong) ? 'both' : (marker.beer ? 'beer' : 'strong');
+        let segs = '';
+        if (marker) {
+            ['beer', 'wine', 'strong'].forEach(t => {
+                if (marker[t]) segs += '<span class="seg ' + t + '"></span>';
+            });
+        }
 
-        btn.innerHTML = '<span class="day-num">' + d + '</span><span class="day-bar ' + bar + '"></span>';
+        btn.innerHTML = '<span class="day-num">' + d + '</span>' +
+            '<span class="day-bar' + (segs ? '' : ' none') + '">' + segs + '</span>';
         btn.onclick = () => selectDay(key);
         grid.appendChild(btn);
     }
@@ -150,15 +173,11 @@ function selectDay(key) {
         renderDayDetails();
         return;
     }
-
     selectedDayKey = key;
     renderCalendar();
     renderDayDetails();
 
-    // Если день пустой — сразу открываем форму записи
-    if (getDayEntries(key).length === 0) {
-        openSheet(key);
-    }
+    if (getDayEntries(key).length === 0) openSheet(key);
 }
 
 function renderDayDetails() {
@@ -170,115 +189,34 @@ function renderDayDetails() {
     }
 
     const { y, m, d } = parseKey(selectedDayKey);
-
     let title = new Date(y, m, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' });
     title = title.charAt(0).toUpperCase() + title.slice(1);
 
     const dayEntries = getDayEntries(selectedDayKey);
-
     let html = '<h2>' + title + '</h2>';
 
     if (dayEntries.length) {
-        let money = 0, cal = 0, items = '';
+        let money = 0, items = '';
         dayEntries.forEach(e => {
             money += e.price;
-            cal += e.calories;
             items += '<li class="history-item"><div class="history-details">' +
-                '<span class="history-name">' + e.name + ', ' + e.volume + ' ' + e.unit + '</span>' +
-                '<span class="history-meta">' + formatNumber(e.price) + ' ₽ · ' + formatNumber(e.calories) + ' ккал</span>' +
-                '</div></li>';
+                '<span class="history-name">' + e.name + ', ' + fmtEntryVol(e) + '</span>' +
+                '<span class="history-meta">' + formatNumber(e.price) + ' ₽</span>' +
+                '</div>' +
+                '<button class="delete-btn" onclick="deleteEntry(' + e.id + ')">×</button></li>';
         });
         html += '<ul class="day-list">' + items + '</ul>';
-        html += '<div class="day-totals">Итого: ' + formatNumber(money) + ' ₽ · ' + formatNumber(cal) + ' ккал</div>';
+        html += '<div class="day-totals">Итого: ' + formatNumber(money) + ' ₽</div>';
     } else {
         html += '<div class="day-hint">В этот день записей нет.</div>';
     }
 
     html += '<button class="add-btn" onclick="openSheet(\'' + selectedDayKey + '\')">+ Добавить запись</button>';
+    if (dayEntries.length) {
+        html += '<button class="delete-day-btn" onclick="deleteDay(\'' + selectedDayKey + '\')">Удалить день</button>';
+    }
     box.innerHTML = html;
 }
-
-// ========== ШТОРКА ЗАПИСИ ==========
-
-function openSheet(key) {
-    sheetDateKey = key;
-    sheetProductKey = null;
-
-    const { y, m, d } = parseKey(key);
-    const dateTitle = new Date(y, m, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-    document.getElementById('sheet-title').innerText = 'Запись за ' + dateTitle;
-
-    document.querySelectorAll('.sheet-product').forEach(b => b.classList.remove('selected'));
-    document.getElementById('input-volume').value = 500;
-    document.getElementById('sheet-volume-label').innerText = 'Объем (мл)';
-    document.getElementById('input-price').value = '';
-
-    updateSheetCalories();
-    document.getElementById('sheet-overlay').style.display = 'flex';
-}
-
-function closeSheet() {
-    document.getElementById('sheet-overlay').style.display = 'none';
-    sheetProductKey = null;
-}
-
-function selectProduct(key) {
-    sheetProductKey = key;
-    document.querySelectorAll('.sheet-product').forEach(b =>
-        b.classList.toggle('selected', b.dataset.key === key));
-
-    const p = PRODUCTS[key];
-    document.getElementById('input-volume').value = p.defaultVolume;
-    document.getElementById('sheet-volume-label').innerText =
-        p.unit === 'g' ? 'Вес (г)' : 'Объем (мл)';
-
-    updateSheetCalories();
-}
-
-function updateSheetCalories() {
-    const el = document.getElementById('sheet-calories');
-    if (!sheetProductKey) { el.innerText = '0'; return; }
-    const p = PRODUCTS[sheetProductKey];
-    const v = parseFloat(document.getElementById('input-volume').value) || 0;
-    el.innerText = Math.round((v / 100) * p.kcal);
-}
-
-function saveEntry() {
-    if (!sheetProductKey) {
-        alert('Сначала выбери продукт');
-        return;
-    }
-
-    const volume = parseFloat(document.getElementById('input-volume').value) || 0;
-    const price = parseFloat(document.getElementById('input-price').value) || 0;
-
-    if (volume <= 0) {
-        alert('Объем должен быть больше нуля');
-        return;
-    }
-
-    const p = PRODUCTS[sheetProductKey];
-    const { y, m, d } = parseKey(sheetDateKey);
-    const nowT = new Date();
-    const dt = new Date(y, m, d, nowT.getHours(), nowT.getMinutes());
-
-    entries.push({
-        id: Date.now(),
-        timestamp: dt.toISOString(),
-        name: p.name,
-        type: p.type,
-        volume: volume,
-        unit: p.unit,
-        price: price,
-        calories: Math.round((volume / 100) * p.kcal)
-    });
-
-    saveData();
-    render();
-    closeSheet();
-}
-
-// ========== ОБЩЕЕ ==========
 
 function deleteEntry(id) {
     entries = entries.filter(e => e.id !== id);
@@ -286,13 +224,205 @@ function deleteEntry(id) {
     render();
 }
 
-function saveData() {
-    localStorage.setItem('drinkTrackerData', JSON.stringify(entries));
+function deleteDay(key) {
+    if (!confirm('Удалить все записи за этот день?')) return;
+    const keys = getDayEntries(key).map(e => e.id);
+    entries = entries.filter(e => !keys.includes(e.id));
+    saveData();
+    render();
 }
 
-function formatNumber(n) {
-    return Math.round(n).toLocaleString('ru-RU');
+// ========== ШТОРКА ЗАПИСИ ==========
+
+function openSheet(key) {
+    sheet.dateKey = key;
+    sheet.rows = [];
+    rowSeq = 0;
+    addRow('alc');
+
+    const { y, m, d } = parseKey(key);
+    const dateTitle = new Date(y, m, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    document.getElementById('sheet-title').innerText = 'Запись за ' + dateTitle;
+
+    document.getElementById('sheet-overlay').style.display = 'flex';
 }
+
+function closeSheet() {
+    document.getElementById('sheet-overlay').style.display = 'none';
+}
+
+function addRow(kind) {
+    sheet.rows.push({ id: ++rowSeq, kind, product: null, volume: null, customVol: false, price: '' });
+    renderSheetRows();
+}
+
+function removeRow(id) {
+    sheet.rows = sheet.rows.filter(r => r.id !== id);
+    renderSheetRows();
+}
+
+function renderSheetRows() {
+    ['alc', 'mix'].forEach(kind => {
+        const box = document.getElementById(kind === 'alc' ? 'alc-rows' : 'mix-rows');
+        box.innerHTML = '';
+
+        sheet.rows.filter(r => r.kind === kind).forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'entry-row';
+
+            // Продукт
+            const prodBtn = document.createElement('button');
+            prodBtn.className = 'field-pick row-product';
+            prodBtn.textContent = r.product ? PRODUCTS[r.product].name : 'Выбрать ▾';
+            prodBtn.onclick = () => openPicker(r.id, 'product');
+
+            // Объем
+            let volEl;
+            if (r.customVol) {
+                volEl = document.createElement('input');
+                volEl.type = 'number';
+                volEl.step = '0.1';
+                volEl.min = '0';
+                volEl.inputMode = 'decimal';
+                volEl.placeholder = 'литры';
+                volEl.className = 'row-price row-volume';
+                volEl.value = r.volume || '';
+                volEl.oninput = () => { r.volume = parseFloat(volEl.value) || 0; updateTotal(); };
+            } else {
+                volEl = document.createElement('button');
+                volEl.className = 'field-pick row-volume';
+                volEl.textContent = r.volume ? r.volume + ' ▾' : 'Объем ▾';
+                volEl.onclick = () => openPicker(r.id, 'volume');
+            }
+
+            // Цена
+            const priceIn = document.createElement('input');
+            priceIn.className = 'row-price';
+            priceIn.placeholder = '₽';
+            priceIn.inputMode = 'numeric';
+            priceIn.value = r.price;
+            priceIn.oninput = () => { r.price = priceIn.value; updateTotal(); };
+
+            // Удалить строку
+            const del = document.createElement('button');
+            del.className = 'row-del';
+            del.textContent = '×';
+            del.onclick = () => removeRow(r.id);
+
+            div.append(prodBtn, volEl, priceIn, del);
+            box.appendChild(div);
+        });
+    });
+    updateTotal();
+}
+
+function updateTotal() {
+    let total = 0;
+    sheet.rows.forEach(r => { total += parseFloat(r.price) || 0; });
+    document.getElementById('sheet-total').textContent = formatNumber(total) + ' ₽';
+}
+
+// ========== ПИКЕР ==========
+
+function openPicker(rowId, field) {
+    pickerTarget = { rowId, field };
+    const row = sheet.rows.find(r => r.id === rowId);
+    const list = document.getElementById('picker-list');
+    list.innerHTML = '';
+
+    let options = [];
+    if (field === 'product') {
+        options = (row.kind === 'alc' ? ALC_KEYS : MIX_KEYS)
+            .map(k => ({ value: k, label: PRODUCTS[k].name }));
+    } else {
+        options = VOL_OPTIONS.map(v => ({ value: v, label: v + ' л' }));
+        options.push({ value: 'custom', label: 'Свой объем…' });
+    }
+
+    options.forEach(o => {
+        const b = document.createElement('button');
+        b.className = 'picker-item';
+        b.textContent = o.label;
+        const current = field === 'product' ? row.product : (row.customVol ? 'custom' : row.volume);
+        if (String(current) === String(o.value)) b.classList.add('selected');
+        b.onclick = () => pickOption(o.value);
+        list.appendChild(b);
+    });
+
+    document.getElementById('picker-overlay').style.display = 'flex';
+}
+
+function closePicker() {
+    document.getElementById('picker-overlay').style.display = 'none';
+    pickerTarget = null;
+}
+
+function pickOption(value) {
+    const row = sheet.rows.find(r => r.id === pickerTarget.rowId);
+
+    if (pickerTarget.field === 'product') {
+        row.product = value;
+        const mem = memory[value];
+        if (mem && mem.volume) {
+            // Память: подставляем прошлые объем и цену
+            row.customVol = false;
+            row.volume = mem.volume;
+            row.price = mem.price || '';
+        } else {
+            row.customVol = false;
+            row.volume = PRODUCTS[value].defVol;
+        }
+    } else {
+        if (value === 'custom') {
+            row.customVol = true;
+            row.volume = null;
+        } else {
+            row.customVol = false;
+            row.volume = value;
+        }
+    }
+
+    closePicker();
+    renderSheetRows();
+}
+
+// ========== СОХРАНЕНИЕ ==========
+
+function saveSheet() {
+    const valid = sheet.rows.filter(r => r.product && r.volume > 0);
+    if (!valid.length) {
+        alert('Заполни хотя бы одну строку: продукт и объем');
+        return;
+    }
+
+    const { y, m, d } = parseKey(sheet.dateKey);
+    const nowT = new Date();
+
+    valid.forEach((r, i) => {
+        const p = PRODUCTS[r.product];
+        const price = parseFloat(r.price) || 0;
+
+        entries.push({
+            id: Date.now() + i,
+            timestamp: new Date(y, m, d, nowT.getHours(), nowT.getMinutes()).toISOString(),
+            name: p.name,
+            type: p.type,
+            volume: r.volume,
+            unit: 'l',
+            price: price
+        });
+
+        // Запоминаем объем и цену для продукта
+        memory[r.product] = { volume: r.volume, price: price };
+    });
+
+    localStorage.setItem('drinkTrackerMemory', JSON.stringify(memory));
+    saveData();
+    render();
+    closeSheet();
+}
+
+// ========== ОТРИСОВКА ==========
 
 function computeMonthCounts(year, month) {
     const markerMap = getMarkerMap();
@@ -311,8 +441,6 @@ function computeMonthCounts(year, month) {
     return { drinking, sober: Math.max(0, elapsed - drinking) };
 }
 
-// ========== ОТРИСОВКА ==========
-
 function render() {
     const now = new Date();
 
@@ -321,21 +449,20 @@ function render() {
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
 
-    let stats = { money: 0, calories: 0, strongLiters: 0, beerLiters: 0 };
+    let stats = { money: 0, beer: 0, wine: 0, strong: 0 };
 
     monthEntries.forEach(entry => {
         stats.money += entry.price;
-        stats.calories += entry.calories;
-        if (entry.type === 'strong') stats.strongLiters += entry.volume;
-        if (entry.type === 'beer') stats.beerLiters += entry.volume;
+        if (entry.type === 'beer') stats.beer += entryLiters(entry);
+        if (entry.type === 'wine') stats.wine += entryLiters(entry);
+        if (entry.type === 'strong') stats.strong += entryLiters(entry);
     });
 
     document.getElementById('stat-money').textContent = formatNumber(stats.money) + ' ₽';
-    document.getElementById('stat-calories').textContent = formatNumber(stats.calories) + ' ккал';
-    document.getElementById('stat-strong').textContent = (stats.strongLiters / 1000).toFixed(2) + ' л';
-    document.getElementById('stat-beer').textContent = (stats.beerLiters / 1000).toFixed(2) + ' л';
+    document.getElementById('stat-beer').textContent = stats.beer.toFixed(2) + ' л';
+    document.getElementById('stat-wine').textContent = stats.wine.toFixed(2) + ' л';
+    document.getElementById('stat-strong').textContent = stats.strong.toFixed(2) + ' л';
 
-    // Счётчик дней на главном
     const counts = computeMonthCounts(now.getFullYear(), now.getMonth());
     document.getElementById('home-summary').innerHTML =
         'Дней с алкоголем: <b>' + counts.drinking + '</b> · Трезвых: <b>' + counts.sober + '</b>';
@@ -356,15 +483,14 @@ function render() {
         li.className = 'history-item';
         li.innerHTML = `
             <div class="history-details">
-                <span class="history-name">${entry.name}, ${entry.volume} ${entry.unit}</span>
-                <span class="history-meta">${dateStr} · ${formatNumber(entry.price)} ₽ · ${formatNumber(entry.calories)} ккал</span>
+                <span class="history-name">${entry.name}, ${fmtEntryVol(entry)}</span>
+                <span class="history-meta">${dateStr} · ${formatNumber(entry.price)} ₽</span>
             </div>
             <button class="delete-btn" onclick="deleteEntry(${entry.id})">×</button>
         `;
         list.appendChild(li);
     });
 
-    // Календарь
     renderCalendar();
     renderDayDetails();
 }
