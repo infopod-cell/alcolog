@@ -19,11 +19,12 @@ const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','
                      'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
 let entries = JSON.parse(localStorage.getItem('drinkTrackerData')) || [];
-let currentProductKey = null;
 
-// Состояние календаря
+// Состояние календаря и шторки
 let viewYear, viewMonth;
 let selectedDayKey = null;
+let sheetDateKey = null;
+let sheetProductKey = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
@@ -41,7 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('input-volume').addEventListener('input', updateModalCalories);
+    document.getElementById('input-volume').addEventListener('input', updateSheetCalories);
+
+    // Закрытие шторки тапом по фону
+    document.getElementById('sheet-overlay').addEventListener('click', (e) => {
+        if (e.target.id === 'sheet-overlay') closeSheet();
+    });
 });
 
 function setMonthTitle() {
@@ -63,6 +69,11 @@ function switchTab(tab) {
 
 function dateKey(y, m, d) { return y + '-' + m + '-' + d; }
 
+function parseKey(key) {
+    const p = key.split('-').map(Number);
+    return { y: p[0], m: p[1], d: p[2] };
+}
+
 function getMarkerMap() {
     const map = {};
     entries.forEach(e => {
@@ -74,6 +85,14 @@ function getMarkerMap() {
         else map[key].strong = true;
     });
     return map;
+}
+
+function getDayEntries(key) {
+    const { y, m, d } = parseKey(key);
+    return entries.filter(e => {
+        const dt = new Date(e.timestamp);
+        return dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d;
+    });
 }
 
 function changeMonth(delta) {
@@ -92,7 +111,7 @@ function renderCalendar() {
     const grid = document.getElementById('cal-grid');
     grid.innerHTML = '';
 
-    const firstDow = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7; // неделя с Пн
+    const firstDow = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const markerMap = getMarkerMap();
     const now = new Date();
@@ -103,12 +122,9 @@ function renderCalendar() {
         grid.appendChild(empty);
     }
 
-    let drinkingDays = 0;
-
     for (let d = 1; d <= daysInMonth; d++) {
         const key = dateKey(viewYear, viewMonth, d);
         const marker = markerMap[key];
-        if (marker) drinkingDays++;
 
         const btn = document.createElement('button');
         btn.className = 'day-tile';
@@ -118,99 +134,121 @@ function renderCalendar() {
         }
         if (selectedDayKey === key) btn.classList.add('selected');
 
-        let dot = 'none';
-        if (marker) dot = (marker.beer && marker.strong) ? 'both' : (marker.beer ? 'beer' : 'strong');
+        let bar = 'none';
+        if (marker) bar = (marker.beer && marker.strong) ? 'both' : (marker.beer ? 'beer' : 'strong');
 
-        btn.innerHTML = '<span class="day-num">' + d + '</span><span class="day-bar ' + dot + '"></span>';
+        btn.innerHTML = '<span class="day-num">' + d + '</span><span class="day-bar ' + bar + '"></span>';
         btn.onclick = () => selectDay(key);
         grid.appendChild(btn);
     }
-
-    // Счётчик дней: пил / трезвых (для текущего месяца — по сегодня)
-    const isCurrent = viewYear === now.getFullYear() && viewMonth === now.getMonth();
-    const isFuture = viewYear > now.getFullYear() || (viewYear === now.getFullYear() && viewMonth > now.getMonth());
-    const elapsed = isFuture ? 0 : (isCurrent ? now.getDate() : daysInMonth);
-    const sober = Math.max(0, elapsed - drinkingDays);
-
-    document.getElementById('month-summary').innerHTML =
-        'Дней с алкоголем: <b>' + drinkingDays + '</b> · Трезвых: <b>' + sober + '</b>';
 }
 
 function selectDay(key) {
-    selectedDayKey = (selectedDayKey === key) ? null : key;
+    if (selectedDayKey === key) {
+        selectedDayKey = null;
+        renderCalendar();
+        renderDayDetails();
+        return;
+    }
+
+    selectedDayKey = key;
     renderCalendar();
     renderDayDetails();
+
+    // Если день пустой — сразу открываем форму записи
+    if (getDayEntries(key).length === 0) {
+        openSheet(key);
+    }
 }
 
 function renderDayDetails() {
     const box = document.getElementById('day-details');
 
     if (!selectedDayKey) {
-        box.innerHTML = '<div class="day-hint">Нажми на день, чтобы посмотреть, что было выпито</div>';
+        box.innerHTML = '<div class="day-hint">Нажми на день, чтобы посмотреть или добавить записи</div>';
         return;
     }
 
-    const parts = selectedDayKey.split('-').map(Number);
-    const y = parts[0], m = parts[1], d = parts[2];
-
-    const dayEntries = entries.filter(e => {
-        const dt = new Date(e.timestamp);
-        return dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d;
-    });
+    const { y, m, d } = parseKey(selectedDayKey);
 
     let title = new Date(y, m, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' });
     title = title.charAt(0).toUpperCase() + title.slice(1);
 
-    if (!dayEntries.length) {
-        box.innerHTML = '<h2>' + title + '</h2><div class="day-hint">В этот день записей нет.</div>';
-        return;
+    const dayEntries = getDayEntries(selectedDayKey);
+
+    let html = '<h2>' + title + '</h2>';
+
+    if (dayEntries.length) {
+        let money = 0, cal = 0, items = '';
+        dayEntries.forEach(e => {
+            money += e.price;
+            cal += e.calories;
+            items += '<li class="history-item"><div class="history-details">' +
+                '<span class="history-name">' + e.name + ', ' + e.volume + ' ' + e.unit + '</span>' +
+                '<span class="history-meta">' + formatNumber(e.price) + ' ₽ · ' + formatNumber(e.calories) + ' ккал</span>' +
+                '</div></li>';
+        });
+        html += '<ul class="day-list">' + items + '</ul>';
+        html += '<div class="day-totals">Итого: ' + formatNumber(money) + ' ₽ · ' + formatNumber(cal) + ' ккал</div>';
+    } else {
+        html += '<div class="day-hint">В этот день записей нет.</div>';
     }
 
-    let money = 0, cal = 0, items = '';
-    dayEntries.forEach(e => {
-        money += e.price;
-        cal += e.calories;
-        items += '<li class="history-item"><div class="history-details">' +
-            '<span class="history-name">' + e.name + ', ' + e.volume + ' ' + e.unit + '</span>' +
-            '<span class="history-meta">' + formatNumber(e.price) + ' ₽ · ' + formatNumber(e.calories) + ' ккал</span>' +
-            '</div></li>';
-    });
-
-    box.innerHTML = '<h2>' + title + '</h2>' +
-        '<ul class="day-list">' + items + '</ul>' +
-        '<div class="day-totals">Итого: ' + formatNumber(money) + ' ₽ · ' + formatNumber(cal) + ' ккал</div>';
+    html += '<button class="add-btn" onclick="openSheet(\'' + selectedDayKey + '\')">+ Добавить запись</button>';
+    box.innerHTML = html;
 }
 
-// ========== ОКНО ВВОДА ==========
+// ========== ШТОРКА ЗАПИСИ ==========
 
-function openModal(key) {
-    currentProductKey = key;
-    const product = PRODUCTS[key];
+function openSheet(key) {
+    sheetDateKey = key;
+    sheetProductKey = null;
 
-    document.getElementById('modal-title').innerText = product.name;
-    document.getElementById('input-volume').value = product.defaultVolume;
-    document.getElementById('volume-label').innerText =
-        product.unit === 'g' ? 'Вес (г)' : 'Объем (мл)';
+    const { y, m, d } = parseKey(key);
+    const dateTitle = new Date(y, m, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    document.getElementById('sheet-title').innerText = 'Запись за ' + dateTitle;
+
+    document.querySelectorAll('.sheet-product').forEach(b => b.classList.remove('selected'));
+    document.getElementById('input-volume').value = 500;
+    document.getElementById('sheet-volume-label').innerText = 'Объем (мл)';
     document.getElementById('input-price').value = '';
 
-    updateModalCalories();
-    document.getElementById('modal-overlay').style.display = 'flex';
+    updateSheetCalories();
+    document.getElementById('sheet-overlay').style.display = 'flex';
 }
 
-function closeModal() {
-    document.getElementById('modal-overlay').style.display = 'none';
-    currentProductKey = null;
+function closeSheet() {
+    document.getElementById('sheet-overlay').style.display = 'none';
+    sheetProductKey = null;
 }
 
-function updateModalCalories() {
-    if (!currentProductKey) return;
-    const product = PRODUCTS[currentProductKey];
-    const volume = parseFloat(document.getElementById('input-volume').value) || 0;
-    document.getElementById('modal-calories').innerText =
-        Math.round((volume / 100) * product.kcal);
+function selectProduct(key) {
+    sheetProductKey = key;
+    document.querySelectorAll('.sheet-product').forEach(b =>
+        b.classList.toggle('selected', b.dataset.key === key));
+
+    const p = PRODUCTS[key];
+    document.getElementById('input-volume').value = p.defaultVolume;
+    document.getElementById('sheet-volume-label').innerText =
+        p.unit === 'g' ? 'Вес (г)' : 'Объем (мл)';
+
+    updateSheetCalories();
+}
+
+function updateSheetCalories() {
+    const el = document.getElementById('sheet-calories');
+    if (!sheetProductKey) { el.innerText = '0'; return; }
+    const p = PRODUCTS[sheetProductKey];
+    const v = parseFloat(document.getElementById('input-volume').value) || 0;
+    el.innerText = Math.round((v / 100) * p.kcal);
 }
 
 function saveEntry() {
+    if (!sheetProductKey) {
+        alert('Сначала выбери продукт');
+        return;
+    }
+
     const volume = parseFloat(document.getElementById('input-volume').value) || 0;
     const price = parseFloat(document.getElementById('input-price').value) || 0;
 
@@ -219,23 +257,28 @@ function saveEntry() {
         return;
     }
 
-    const product = PRODUCTS[currentProductKey];
+    const p = PRODUCTS[sheetProductKey];
+    const { y, m, d } = parseKey(sheetDateKey);
+    const nowT = new Date();
+    const dt = new Date(y, m, d, nowT.getHours(), nowT.getMinutes());
 
     entries.push({
         id: Date.now(),
-        timestamp: new Date().toISOString(),
-        name: product.name,
-        type: product.type,
+        timestamp: dt.toISOString(),
+        name: p.name,
+        type: p.type,
         volume: volume,
-        unit: product.unit,
+        unit: p.unit,
         price: price,
-        calories: Math.round((volume / 100) * product.kcal)
+        calories: Math.round((volume / 100) * p.kcal)
     });
 
     saveData();
     render();
-    closeModal();
+    closeSheet();
 }
+
+// ========== ОБЩЕЕ ==========
 
 function deleteEntry(id) {
     entries = entries.filter(e => e.id !== id);
@@ -249,6 +292,23 @@ function saveData() {
 
 function formatNumber(n) {
     return Math.round(n).toLocaleString('ru-RU');
+}
+
+function computeMonthCounts(year, month) {
+    const markerMap = getMarkerMap();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const now = new Date();
+
+    let drinking = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+        if (markerMap[dateKey(year, month, d)]) drinking++;
+    }
+
+    const isCurrent = year === now.getFullYear() && month === now.getMonth();
+    const isFuture = year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth());
+    const elapsed = isFuture ? 0 : (isCurrent ? now.getDate() : daysInMonth);
+
+    return { drinking, sober: Math.max(0, elapsed - drinking) };
 }
 
 // ========== ОТРИСОВКА ==========
@@ -274,6 +334,11 @@ function render() {
     document.getElementById('stat-calories').textContent = formatNumber(stats.calories) + ' ккал';
     document.getElementById('stat-strong').textContent = (stats.strongLiters / 1000).toFixed(2) + ' л';
     document.getElementById('stat-beer').textContent = (stats.beerLiters / 1000).toFixed(2) + ' л';
+
+    // Счётчик дней на главном
+    const counts = computeMonthCounts(now.getFullYear(), now.getMonth());
+    document.getElementById('home-summary').innerHTML =
+        'Дней с алкоголем: <b>' + counts.drinking + '</b> · Трезвых: <b>' + counts.sober + '</b>';
 
     // История
     const list = document.getElementById('history-list');
