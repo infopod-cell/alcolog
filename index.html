@@ -18,13 +18,16 @@
     <!-- ЭКРАН 1: ГЛАВНАЯ -->
     <div id="screen-home" class="screen active">
         <div class="container">
-            <header class="page-header">
-                <h1 id="month-title">Сентябрь</h1>
-            </header>
-
-            <div class="stat-tile wide">
-                <span class="stat-label">Потрачено</span>
-                <span class="stat-value" id="stat-money">0 ₽</span>
+            
+            <div class="stats-grid two">
+                <div class="stat-tile">
+                    <span class="stat-label">Потрачено за месяц</span>
+                    <span class="stat-value" id="stat-money-month">0 ₽</span>
+                </div>
+                <div class="stat-tile">
+                    <span class="stat-label">Потрачено за всё время</span>
+                    <span class="stat-value" id="stat-money-all">0 ₽</span>
+                </div>
             </div>
 
             <div class="stats-grid">
