@@ -463,3 +463,9 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02
     cursor: pointer;
 }
 .tab.active { color: var(--accent); }
+.backup-info {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 6px;
+    text-align: center;
+}
