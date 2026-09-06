@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
 
-    setMonthTitle();
     render();
 
     document.getElementById('clear-history-btn').addEventListener('click', () => {
@@ -57,11 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function setMonthTitle() {
-    const name = new Date().toLocaleDateString('ru-RU', { month: 'long' });
-    document.getElementById('month-title').textContent =
-        name.charAt(0).toUpperCase() + name.slice(1);
-}
 
 function switchTab(tab) {
     ['home', 'calendar', 'history'].forEach(t => {
