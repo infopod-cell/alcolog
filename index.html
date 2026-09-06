@@ -15,7 +15,7 @@
 </head>
 <body>
 
-    <!-- ЭКРАН 1: ГЛАВНАЯ -->
+    <!-- ЭКРАН 1: ГЛАВНАЯ (витрина) -->
     <div id="screen-home" class="screen active">
         <div class="container">
             <header class="page-header">
@@ -41,36 +41,7 @@
                 </div>
             </div>
 
-            <section class="controls">
-                <div class="control-group">
-                    <span class="group-label">Алкоголь</span>
-                    <div class="tile-grid cols-3">
-                        <button class="tile-btn" onclick="openModal('beer')">Пиво</button>
-                        <button class="tile-btn" onclick="openModal('gin')">Джин</button>
-                        <button class="tile-btn" onclick="openModal('rum')">Ром</button>
-                        <button class="tile-btn" onclick="openModal('whiskey')">Виски</button>
-                        <button class="tile-btn" onclick="openModal('tincture')">Настойка</button>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <span class="group-label">Миксеры</span>
-                    <div class="tile-grid cols-4">
-                        <button class="tile-btn small" onclick="openModal('tonic')">Тоник</button>
-                        <button class="tile-btn small" onclick="openModal('cola')">Кола</button>
-                        <button class="tile-btn small" onclick="openModal('lemonade')">Лимонад</button>
-                        <button class="tile-btn small" onclick="openModal('juice')">Сок</button>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <span class="group-label">Еда</span>
-                    <div class="tile-grid cols-2">
-                        <button class="tile-btn" onclick="openModal('peanuts')">Арахис 200г</button>
-                        <button class="tile-btn" onclick="openModal('other_food')">Другая еда</button>
-                    </div>
-                </div>
-            </section>
+            <div class="summary-tile" id="home-summary"></div>
         </div>
     </div>
 
@@ -89,12 +60,10 @@
             <div id="cal-grid" class="cal-grid"></div>
 
             <div class="cal-legend">
-    <span class="legend-item"><span class="legend-bar beer"></span>Пиво</span>
-    <span class="legend-item"><span class="legend-bar strong"></span>Крепкое</span>
-    <span class="legend-item"><span class="legend-bar both"></span>И то и другое</span>
-</div>
-
-            <div class="cal-summary" id="month-summary"></div>
+                <span class="legend-item"><span class="legend-bar beer"></span>Пиво</span>
+                <span class="legend-item"><span class="legend-bar strong"></span>Крепкое</span>
+                <span class="legend-item"><span class="legend-bar both"></span>И то и другое</span>
+            </div>
 
             <div id="day-details" class="day-details"></div>
         </div>
@@ -107,7 +76,7 @@
                 <h1>История</h1>
                 <button id="clear-history-btn" class="ghost-btn">Очистить всё</button>
             </header>
-            <div id="history-empty" class="empty-state">Пока пусто.<br>Добавь первую запись на главном экране.</div>
+            <div id="history-empty" class="empty-state">Пока пусто.<br>Добавь первую запись в календаре.</div>
             <ul id="history-list"></ul>
         </div>
     </div>
@@ -128,27 +97,52 @@
         </button>
     </nav>
 
-    <!-- ОКНО ВВОДА -->
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <h3 id="modal-title">Добавить</h3>
+    <!-- ШТОРКА ЗАПИСИ -->
+    <div id="sheet-overlay" class="sheet-overlay">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <h3 id="sheet-title">Запись</h3>
 
-            <div class="input-group">
-                <label id="volume-label">Объем (мл)</label>
-                <input type="number" id="input-volume" value="500" min="0" step="50" inputmode="numeric">
+            <span class="group-label">Алкоголь</span>
+            <div class="tile-grid cols-3">
+                <button class="tile-btn sheet-product" data-key="beer" onclick="selectProduct('beer')">Пиво</button>
+                <button class="tile-btn sheet-product" data-key="gin" onclick="selectProduct('gin')">Джин</button>
+                <button class="tile-btn sheet-product" data-key="rum" onclick="selectProduct('rum')">Ром</button>
+                <button class="tile-btn sheet-product" data-key="whiskey" onclick="selectProduct('whiskey')">Виски</button>
+                <button class="tile-btn sheet-product" data-key="tincture" onclick="selectProduct('tincture')">Настойка</button>
             </div>
 
-            <div class="input-group">
-                <label>Цена (₽)</label>
-                <input type="number" id="input-price" value="0" min="0" inputmode="numeric">
+            <span class="group-label">Миксеры</span>
+            <div class="tile-grid cols-4">
+                <button class="tile-btn small sheet-product" data-key="tonic" onclick="selectProduct('tonic')">Тоник</button>
+                <button class="tile-btn small sheet-product" data-key="cola" onclick="selectProduct('cola')">Кола</button>
+                <button class="tile-btn small sheet-product" data-key="lemonade" onclick="selectProduct('lemonade')">Лимонад</button>
+                <button class="tile-btn small sheet-product" data-key="juice" onclick="selectProduct('juice')">Сок</button>
             </div>
 
-            <div class="modal-info">
-                Калорийность: ~<span id="modal-calories">0</span> ккал
+            <span class="group-label">Еда</span>
+            <div class="tile-grid cols-2">
+                <button class="tile-btn sheet-product" data-key="peanuts" onclick="selectProduct('peanuts')">Арахис 200г</button>
+                <button class="tile-btn sheet-product" data-key="other_food" onclick="selectProduct('other_food')">Другая еда</button>
             </div>
 
-            <div class="modal-buttons">
-                <button class="tile-btn" onclick="closeModal()">Отмена</button>
+            <div class="input-row">
+                <div class="input-group">
+                    <label id="sheet-volume-label">Объем (мл)</label>
+                    <input type="number" id="input-volume" value="500" min="0" step="50" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label>Цена (₽)</label>
+                    <input type="number" id="input-price" value="0" min="0" inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="sheet-info">
+                Калорийность: ~<span id="sheet-calories">0</span> ккал
+            </div>
+
+            <div class="sheet-buttons">
+                <button class="tile-btn" onclick="closeSheet()">Отмена</button>
                 <button class="tile-btn save-btn" onclick="saveEntry()">Сохранить</button>
             </div>
         </div>
