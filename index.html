@@ -15,29 +15,30 @@
 </head>
 <body>
 
-    <!-- ЭКРАН 1: ГЛАВНАЯ (витрина) -->
+    <!-- ЭКРАН 1: ГЛАВНАЯ -->
     <div id="screen-home" class="screen active">
         <div class="container">
             <header class="page-header">
                 <h1 id="month-title">Сентябрь</h1>
             </header>
 
+            <div class="stat-tile wide">
+                <span class="stat-label">Потрачено</span>
+                <span class="stat-value" id="stat-money">0 ₽</span>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-tile">
-                    <span class="stat-label">Потрачено</span>
-                    <span class="stat-value" id="stat-money">0 ₽</span>
+                    <span class="stat-label">🍺 Пиво</span>
+                    <span class="stat-value" id="stat-beer">0 л</span>
                 </div>
                 <div class="stat-tile">
-                    <span class="stat-label">Калории</span>
-                    <span class="stat-value" id="stat-calories">0 ккал</span>
+                    <span class="stat-label">🍷 Вино</span>
+                    <span class="stat-value" id="stat-wine">0 л</span>
                 </div>
                 <div class="stat-tile">
                     <span class="stat-label">🥃 Крепкое</span>
                     <span class="stat-value" id="stat-strong">0 л</span>
-                </div>
-                <div class="stat-tile">
-                    <span class="stat-label">🍺 Пиво</span>
-                    <span class="stat-value" id="stat-beer">0 л</span>
                 </div>
             </div>
 
@@ -61,8 +62,8 @@
 
             <div class="cal-legend">
                 <span class="legend-item"><span class="legend-bar beer"></span>Пиво</span>
+                <span class="legend-item"><span class="legend-bar wine"></span>Вино</span>
                 <span class="legend-item"><span class="legend-bar strong"></span>Крепкое</span>
-                <span class="legend-item"><span class="legend-bar both"></span>И то и другое</span>
             </div>
 
             <div id="day-details" class="day-details"></div>
@@ -104,48 +105,22 @@
             <h3 id="sheet-title">Запись</h3>
 
             <span class="group-label">Алкоголь</span>
-            <div class="tile-grid cols-3">
-                <button class="tile-btn sheet-product" data-key="beer" onclick="selectProduct('beer')">Пиво</button>
-                <button class="tile-btn sheet-product" data-key="gin" onclick="selectProduct('gin')">Джин</button>
-                <button class="tile-btn sheet-product" data-key="rum" onclick="selectProduct('rum')">Ром</button>
-                <button class="tile-btn sheet-product" data-key="whiskey" onclick="selectProduct('whiskey')">Виски</button>
-                <button class="tile-btn sheet-product" data-key="tincture" onclick="selectProduct('tincture')">Настойка</button>
-            </div>
+            <div id="alc-rows"></div>
+            <button class="add-row-btn" onclick="addRow('alc')">+ Добавить напиток</button>
 
             <span class="group-label">Миксеры</span>
-            <div class="tile-grid cols-4">
-                <button class="tile-btn small sheet-product" data-key="tonic" onclick="selectProduct('tonic')">Тоник</button>
-                <button class="tile-btn small sheet-product" data-key="cola" onclick="selectProduct('cola')">Кола</button>
-                <button class="tile-btn small sheet-product" data-key="lemonade" onclick="selectProduct('lemonade')">Лимонад</button>
-                <button class="tile-btn small sheet-product" data-key="juice" onclick="selectProduct('juice')">Сок</button>
-            </div>
+            <div id="mix-rows"></div>
+            <button class="add-row-btn" onclick="addRow('mix')">+ Добавить миксер</button>
 
-            <span class="group-label">Еда</span>
-            <div class="tile-grid cols-2">
-                <button class="tile-btn sheet-product" data-key="peanuts" onclick="selectProduct('peanuts')">Арахис 200г</button>
-                <button class="tile-btn sheet-product" data-key="other_food" onclick="selectProduct('other_food')">Другая еда</button>
-            </div>
+            <div class="sheet-total">Итого: <span id="sheet-total">0 ₽</span></div>
 
-            <div class="input-row">
-                <div class="input-group">
-                    <label id="sheet-volume-label">Объем (мл)</label>
-                    <input type="number" id="input-volume" value="500" min="0" step="50" inputmode="numeric">
-                </div>
-                <div class="input-group">
-                    <label>Цена (₽)</label>
-                    <input type="number" id="input-price" value="0" min="0" inputmode="numeric">
-                </div>
-            </div>
-
-            <div class="sheet-info">
-                Калорийность: ~<span id="sheet-calories">0</span> ккал
-            </div>
-
-            <div class="sheet-buttons">
-                <button class="tile-btn" onclick="closeSheet()">Отмена</button>
-                <button class="tile-btn save-btn" onclick="saveEntry()">Сохранить</button>
-            </div>
+            <button class="tile-btn save-btn wide-btn" onclick="saveSheet()">Сохранить запись</button>
         </div>
+    </div>
+
+    <!-- ПРОКРУЧИВАЕМЫЙ СПИСОК (ПИКЕР) -->
+    <div id="picker-overlay" class="picker-overlay">
+        <div class="picker" id="picker-list"></div>
     </div>
 
     <script src="app.js"></script>
