@@ -55,6 +55,7 @@ function switchTab(tab) {
         document.getElementById('screen-' + t).classList.toggle('active', t === tab);
         document.getElementById('tab-' + t).classList.toggle('active', t === tab);
     });
+    if (tab === 'save') renderBackupInfo();
     window.scrollTo(0, 0);
 }
 
