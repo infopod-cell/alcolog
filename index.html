@@ -19,14 +19,17 @@
     <div id="screen-home" class="screen active">
         <div class="container">
             
-            <div class="stats-grid two">
-                <div class="stat-tile">
-                    <span class="stat-label">Потрачено за месяц</span>
-                    <span class="stat-value" id="stat-money-month">0 ₽</span>
-                </div>
-                <div class="stat-tile">
-                    <span class="stat-label">Потрачено за всё время</span>
-                    <span class="stat-value" id="stat-money-all">0 ₽</span>
+            <div class="stat-tile money-block">
+                <span class="stat-label">Потрачено</span>
+                <div class="money-cols">
+                    <div class="money-col">
+                        <span class="stat-value" id="stat-money-month">0 ₽</span>
+                        <span class="money-sub">за месяц</span>
+                    </div>
+                    <div class="money-col">
+                        <span class="stat-value" id="stat-money-all">0 ₽</span>
+                        <span class="money-sub">за всё время</span>
+                    </div>
                 </div>
             </div>
 
