@@ -314,6 +314,9 @@ function exportData() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    localStorage.setItem('drinkTrackerLastBackup', String(Date.now()));
+    renderBackupInfo();
 }
 
 function handleRestore(e) {
