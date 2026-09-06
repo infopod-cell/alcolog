@@ -350,7 +350,37 @@ function handleRestore(e) {
     };
     reader.readAsText(file);
 }
+function daysWord(n) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m100 >= 11 && m100 <= 14) return 'дней';
+    if (m10 === 1) return 'день';
+    if (m10 >= 2 && m10 <= 4) return 'дня';
+    return 'дней';
+}
 
+function renderBackupInfo() {
+    const el = document.getElementById('backup-info');
+    const ts = parseInt(localStorage.getItem('drinkTrackerLastBackup')) || null;
+
+    if (!ts) {
+        el.textContent = 'Копия ещё не сохранялась';
+        return;
+    }
+
+    const then = new Date(ts);
+    const now = new Date();
+    const startThen = new Date(then.getFullYear(), then.getMonth(), then.getDate());
+    const startNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const days = Math.round((startNow - startThen) / 86400000);
+
+    let when;
+    if (days === 0) when = 'сегодня';
+    else if (days === 1) when = 'вчера';
+    else when = days + ' ' + daysWord(days) + ' назад';
+
+    const dateStr = then.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    el.textContent = 'Последняя копия: ' + when + ' (' + dateStr + ')';
+}
 // ========== ШТОРКА ЗАПИСИ ==========
 
 function openSheet(key) {
