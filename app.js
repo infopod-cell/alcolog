@@ -206,6 +206,7 @@ function renderDayDetails() {
 function deleteEntry(id) {
     entries = entries.filter(e => e.id !== id);
     saveData();
+    mascotOverride = 'delete';
     render();
 }
 
