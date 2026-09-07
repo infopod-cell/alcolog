@@ -604,7 +604,9 @@ function render() {
 
     document.getElementById('stat-money-month').textContent = formatNumber(stats.money) + ' ₽';
     document.getElementById('stat-money-all').textContent = formatNumber(moneyAll) + ' ₽';
-    document.getElementById('home-month-title').textContent = MONTH_NAMES[now.getMonth()];
+        const monthName = MONTH_NAMES[now.getMonth()].toLowerCase();
+    document.getElementById('home-month-title').textContent = 'Выпито за ' + monthName;
+    document.getElementById('home-days-title').textContent = 'Дни за ' + monthName;
 
     document.getElementById('stat-beer').textContent = fmtL(stats.beer) + ' л';
     document.getElementById('stat-wine').textContent = fmtL(stats.wine) + ' л';
@@ -617,8 +619,14 @@ function render() {
     });
 
     const counts = computeMonthCounts(now.getFullYear(), now.getMonth());
-    document.getElementById('home-summary').innerHTML =
-        'Дней с алкоголем: <b>' + counts.drinking + '</b> · Трезвых: <b>' + counts.sober + '</b>';
+    document.getElementById('days-drink').textContent = counts.drinking;
+    document.getElementById('days-sober').textContent = counts.sober;
+
+    const maxDays = Math.max(counts.drinking, counts.sober);
+    document.getElementById('bar-days-drink').style.width =
+        (maxDays > 0 ? (counts.drinking / maxDays) * 100 : 0) + '%';
+    document.getElementById('bar-days-sober').style.width =
+        (maxDays > 0 ? (counts.sober / maxDays) * 100 : 0) + '%';
 
     renderCalendar();
     renderDayDetails();
