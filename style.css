@@ -469,3 +469,64 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02
     margin-top: 6px;
     text-align: center;
 }
+
+/* Карточка месяца на главной */
+.month-card {
+    background: var(--tile);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.month-card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.vol-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vol-name {
+    width: 96px;
+    flex: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.vol-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--tile-press);
+    overflow: hidden;
+}
+
+.vol-bar .seg {
+    display: block;
+    flex: none;
+    height: 100%;
+    width: 0;
+    border-radius: 4px;
+}
+
+.vol-value {
+    width: 64px;
+    flex: none;
+    text-align: right;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.month-card-days {
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+.month-card-days b { color: var(--text); }
