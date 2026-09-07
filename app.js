@@ -215,6 +215,7 @@ function deleteDay(key) {
     const ids = getDayEntries(key).map(e => e.id);
     entries = entries.filter(e => !ids.includes(e.id));
     saveData();
+    mascotOverride = 'delete';
     render();
 }
 
