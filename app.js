@@ -320,6 +320,9 @@ function exportData() {
 
     localStorage.setItem('drinkTrackerLastBackup', String(Date.now()));
     renderBackupInfo();
+
+    const phraseEl = document.getElementById('mascot-phrase');
+    if (phraseEl) phraseEl.textContent = pickPhrase(PHRASES.backup);
 }
 
 function handleRestore(e) {
