@@ -631,6 +631,7 @@ function render() {
     renderCalendar();
     renderDayDetails();
     renderAnalytics();
+    renderMascot();
 }
 // Автообновление: перезагружаем страницу, когда прилетела новая версия
 if ('serviceWorker' in navigator) {
