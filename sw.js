@@ -1,4 +1,4 @@
-const VERSION = 'v16';
+const VERSION = 'v17';
 const CACHE_NAME = 'alkogolik-' + VERSION;
 const CORE = [
   './',
@@ -6,7 +6,8 @@ const CORE = [
   'style.css',
   'app.js',
   'manifest.json',
-  'icon.png'
+  'icon.png',
+  'mascot.png'
 ];
 
 self.addEventListener('install', event => {
