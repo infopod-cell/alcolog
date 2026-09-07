@@ -604,9 +604,17 @@ function render() {
 
     document.getElementById('stat-money-month').textContent = formatNumber(stats.money) + ' ₽';
     document.getElementById('stat-money-all').textContent = formatNumber(moneyAll) + ' ₽';
-    document.getElementById('stat-beer').textContent = stats.beer.toFixed(2) + ' л';
-    document.getElementById('stat-wine').textContent = stats.wine.toFixed(2) + ' л';
-    document.getElementById('stat-strong').textContent = stats.strong.toFixed(2) + ' л';
+    document.getElementById('home-month-title').textContent = MONTH_NAMES[now.getMonth()];
+
+    document.getElementById('stat-beer').textContent = fmtL(stats.beer) + ' л';
+    document.getElementById('stat-wine').textContent = fmtL(stats.wine) + ' л';
+    document.getElementById('stat-strong').textContent = fmtL(stats.strong) + ' л';
+
+    const maxVol = Math.max(stats.beer, stats.wine, stats.strong);
+    ['beer', 'wine', 'strong'].forEach(t => {
+        document.getElementById('bar-' + t).style.width =
+            (maxVol > 0 ? (stats[t] / maxVol) * 100 : 0) + '%';
+    });
 
     const counts = computeMonthCounts(now.getFullYear(), now.getMonth());
     document.getElementById('home-summary').innerHTML =
