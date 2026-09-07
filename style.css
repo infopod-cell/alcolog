@@ -530,3 +530,8 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02
     text-align: center;
 }
 .month-card-days b { color: var(--text); }
+
+.month-card { margin-bottom: 10px; }
+
+.seg.drink { background: var(--accent); }
+.seg.sober { background: #5BA875; }
