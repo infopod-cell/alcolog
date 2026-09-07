@@ -632,18 +632,10 @@ function render() {
     renderDayDetails();
     renderAnalytics();
 }
-// Автообновление при появлении новой версии
+// Автообновление: перезагружаем страницу, когда прилетела новая версия
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      if (newWorker) {
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'activated') {
-            window.location.reload();
-          }
-        });
-      }
-    });
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController) window.location.reload();
   });
 }
