@@ -639,3 +639,93 @@ if ('serviceWorker' in navigator) {
     if (hadController) window.location.reload();
   });
 }
+// ========== МУЖИЧОК-КОМПАНЬОН ==========
+
+const PHRASES = {
+    today: [
+        'Записано. Главное — остановиться, пока весело.',
+        'План на день выполнен. Печень уведомлена.',
+        'Пиво — не суп, но в зачёт пошло.',
+        'Кружка опустела, история осталась.'
+    ],
+    heavy: [
+        'Масштабно. Завтра рекомендую воду и подвиги.',
+        'Это уже сюжет для внуков. Записал.'
+    ],
+    sober1: [
+        'День без пива — организм уже удивился.',
+        'Первый день держишься. Кружка начала нервничать.'
+    ],
+    soberFew: [
+        'Три дня?! Пиво проверяет, жив ли ты.',
+        'Серия растёт. Тихо, спугнёшь.'
+    ],
+    lessMonth: [
+        'В этом месяце пьёшь аккуратнее. Почти интеллигент.'
+    ],
+    moreMonth: [
+        'В этом месяце бодрее, чем в прошлом. Зато честно посчитано.'
+    ],
+    idle: [
+        'Страница дня пуста. Пусть такой и останется… или нет.',
+        'Кружка чистая, статистика ждёт.',
+        'Пиво само себя не выпьет. Но и не обязано.'
+    ],
+    friday: [
+        'Пятница. Я ничего не говорю. Я всё понимаю.'
+    ]
+};
+
+function pickPhrase(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function renderMascot() {
+    const el = document.getElementById('mascot-phrase');
+    if (!el) return;
+
+    const now = new Date();
+    const todayEntries = getDayEntries(dateKey(now.getFullYear(), now.getMonth(), now.getDate()));
+    const todayLiters = todayEntries.reduce((s, e) => s + entryLiters(e), 0);
+
+    // Сегодня что-то записано
+    if (todayEntries.length) {
+        el.textContent = todayLiters >= 3 ? pickPhrase(PHRASES.heavy) : pickPhrase(PHRASES.today);
+        return;
+    }
+
+    // Серия трезвых дней подряд (до сегодня)
+    const markerMap = getMarkerMap();
+    let streak = 0;
+    for (let back = 1; back <= 60; back++) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - back);
+        if (markerMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())]) break;
+        streak++;
+    }
+
+    if (streak >= 3) { el.textContent = pickPhrase(PHRASES.soberFew); return; }
+    if (streak >= 1) { el.textContent = pickPhrase(PHRASES.sober1); return; }
+
+    // Сравнение с прошлым месяцем по деньгам
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const thisMoney = entries.reduce((s, e) => {
+        const d = new Date(e.timestamp);
+        return (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) ? s + e.price : s;
+    }, 0);
+    const prevMoney = entries.reduce((s, e) => {
+        const d = new Date(e.timestamp);
+        return (d.getMonth() === prev.getMonth() && d.getFullYear() === prev.getFullYear()) ? s + e.price : s;
+    }, 0);
+    if (thisMoney > 0 && prevMoney > 0) {
+        el.textContent = thisMoney < prevMoney ? pickPhrase(PHRASES.lessMonth) : pickPhrase(PHRASES.moreMonth);
+        return;
+    }
+
+    // Пятница вечером
+    if (now.getDay() === 5 && now.getHours() >= 17) {
+        el.textContent = pickPhrase(PHRASES.friday);
+        return;
+    }
+
+    el.textContent = pickPhrase(PHRASES.idle);
+}
