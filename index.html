@@ -32,22 +32,27 @@
                 </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-tile">
-                    <span class="stat-label">🍺 Пиво</span>
-                    <span class="stat-value" id="stat-beer">0 л</span>
-                </div>
-                <div class="stat-tile">
-                    <span class="stat-label">🍷 Вино</span>
-                    <span class="stat-value" id="stat-wine">0 л</span>
-                </div>
-                <div class="stat-tile">
-                    <span class="stat-label">🥃 Крепкое</span>
-                    <span class="stat-value" id="stat-strong">0 л</span>
-                </div>
-            </div>
+                <div class="month-card">
+                <div class="month-card-title" id="home-month-title">Сентябрь</div>
 
-            <div class="summary-tile" id="home-summary"></div>
+                <div class="vol-row">
+                    <span class="vol-name">🍺 Пиво</span>
+                    <div class="vol-bar"><span class="seg beer" id="bar-beer"></span></div>
+                    <span class="vol-value" id="stat-beer">0 л</span>
+                </div>
+                <div class="vol-row">
+                    <span class="vol-name">🍷 Вино</span>
+                    <div class="vol-bar"><span class="seg wine" id="bar-wine"></span></div>
+                    <span class="vol-value" id="stat-wine">0 л</span>
+                </div>
+                <div class="vol-row">
+                    <span class="vol-name">🥃 Крепкое</span>
+                    <div class="vol-bar"><span class="seg strong" id="bar-strong"></span></div>
+                    <span class="vol-value" id="stat-strong">0 л</span>
+                </div>
+
+                <div class="month-card-days" id="home-summary"></div>
+            </div>
         </div>
     </div>
 
