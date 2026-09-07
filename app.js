@@ -647,19 +647,35 @@ const PHRASES = {
         'Записано. Главное — остановиться, пока весело.',
         'План на день выполнен. Печень уведомлена.',
         'Пиво — не суп, но в зачёт пошло.',
-        'Кружка опустела, история осталась.'
+        'Кружка опустела, история осталась.',
+        'Учтено. Ни капля не потеряна для истории.',
+        'Кружка была полной — стала пустой. Круговорот пива в природе.',
+        'Записал. Ты честен с собой — это главное в нашем деле.'
     ],
     heavy: [
         'Масштабно. Завтра рекомендую воду и подвиги.',
-        'Это уже сюжет для внуков. Записал.'
+        'Это уже сюжет для внуков. Записал.',
+        'Сегодня ты пил как легендарный персонаж.',
+        'Печень попросила выходной. Я передал.',
+        'Такие дни в годовой статистике пишутся золотыми буквами.'
+    ],
+    strongDay: [
+        'Сегодня по-взрослому. Уважаю выбор.',
+        'Крепкое? Ну, это уже не жажда, это беседа.'
+    ],
+    mixerDay: [
+        'Джин с тоником? Классика жанра!',
+        'Энергетик поверх? Двойной привет этой ночи.'
     ],
     sober1: [
         'День без пива — организм уже удивился.',
-        'Первый день держишься. Кружка начала нервничать.'
+        'Первый день держишься. Кружка начала нервничать.',
+        'Сутки без пива. Это рекорд сезона или разминка?'
     ],
     soberFew: [
         'Три дня?! Пиво проверяет, жив ли ты.',
-        'Серия растёт. Тихо, спугнёшь.'
+        'Серия растёт. Тихо, спугнёшь.',
+        'Держишься? Держись. Я рядом, я тоже терплю.'
     ],
     lessMonth: [
         'В этом месяце пьёшь аккуратнее. Почти интеллигент.'
@@ -667,13 +683,36 @@ const PHRASES = {
     moreMonth: [
         'В этом месяце бодрее, чем в прошлом. Зато честно посчитано.'
     ],
+    morning: [
+        'Доброе утро! Пиво подождёт до вечера. Наверное.',
+        'Рано. Кружка ещё спит, и я с ней.'
+    ],
+    night: [
+        'Поздно. Но пиво на часы не смотрит.',
+        'Ночная смена? Я с тобой, только тише.'
+    ],
+    weekend: [
+        'Пятница пришла. Я на всякий случай подвинул кружку поближе.',
+        'Суббота? Понимаю. Не осуждаю. Поддерживаю.'
+    ],
+    newmonth: [
+        'Новый месяц — новая страница. Старую не перечитываем.'
+    ],
+    backup: [
+        'Копия сохранена. Теперь наши мемуары в безопасности.',
+        'Записал на флешку воспоминания. Спокоен.'
+    ],
+    delete: [
+        'Стёрто. Будто и не было. Но мы-то помним.',
+        'Убрал лишнее? Имеешь право. Тайна останется между нами.'
+    ],
     idle: [
         'Страница дня пуста. Пусть такой и останется… или нет.',
         'Кружка чистая, статистика ждёт.',
-        'Пиво само себя не выпьет. Но и не обязано.'
-    ],
-    friday: [
-        'Пятница. Я ничего не говорю. Я всё понимаю.'
+        'Пиво само себя не выпьет. Но и не обязано.',
+        'Тишина в журнале — тоже результат. Но скучновато.',
+        'Жду новостей. Хороших или пивных.',
+        'День без записей — день-загадка.'
     ]
 };
 
@@ -681,21 +720,37 @@ function pickPhrase(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
+let mascotOverride = null;
+
 function renderMascot() {
     const el = document.getElementById('mascot-phrase');
     if (!el) return;
 
-    const now = new Date();
-    const todayEntries = getDayEntries(dateKey(now.getFullYear(), now.getMonth(), now.getDate()));
-    const todayLiters = todayEntries.reduce((s, e) => s + entryLiters(e), 0);
-
-    // Сегодня что-то записано
-    if (todayEntries.length) {
-        el.textContent = todayLiters >= 3 ? pickPhrase(PHRASES.heavy) : pickPhrase(PHRASES.today);
+    // Спец-фраза сразу после действия (удаление)
+    if (mascotOverride) {
+        const group = mascotOverride;
+        mascotOverride = null;
+        el.textContent = pickPhrase(PHRASES[group]);
         return;
     }
 
-    // Серия трезвых дней подряд (до сегодня)
+    const now = new Date();
+    const todayEntries = getDayEntries(dateKey(now.getFullYear(), now.getMonth(), now.getDate()));
+
+    // Сегодня что-то записано
+    if (todayEntries.length) {
+        const todayLiters = todayEntries.reduce((s, e) => s + entryLiters(e), 0);
+        const hasStrong = todayEntries.some(e => e.type === 'wine' || e.type === 'strong');
+        const hasMixer = todayEntries.some(e => e.type === 'mixer');
+
+        if (todayLiters >= 3) el.textContent = pickPhrase(PHRASES.heavy);
+        else if (hasStrong) el.textContent = pickPhrase(PHRASES.strongDay);
+        else if (hasMixer) el.textContent = pickPhrase(PHRASES.mixerDay);
+        else el.textContent = pickPhrase(PHRASES.today);
+        return;
+    }
+
+    // Серия трезвых дней подряд
     const markerMap = getMarkerMap();
     let streak = 0;
     for (let back = 1; back <= 60; back++) {
@@ -703,9 +758,11 @@ function renderMascot() {
         if (markerMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())]) break;
         streak++;
     }
-
     if (streak >= 3) { el.textContent = pickPhrase(PHRASES.soberFew); return; }
     if (streak >= 1) { el.textContent = pickPhrase(PHRASES.sober1); return; }
+
+    // Начало нового месяца
+    if (now.getDate() <= 2) { el.textContent = pickPhrase(PHRASES.newmonth); return; }
 
     // Сравнение с прошлым месяцем по деньгам
     const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -722,9 +779,13 @@ function renderMascot() {
         return;
     }
 
-    // Пятница вечером
-    if (now.getDay() === 5 && now.getHours() >= 17) {
-        el.textContent = pickPhrase(PHRASES.friday);
+    // Время суток
+    if (now.getHours() < 12) { el.textContent = pickPhrase(PHRASES.morning); return; }
+    if (now.getHours() >= 23) { el.textContent = pickPhrase(PHRASES.night); return; }
+
+    // Пятница и суббота вечером
+    if ((now.getDay() === 5 || now.getDay() === 6) && now.getHours() >= 17) {
+        el.textContent = pickPhrase(PHRASES.weekend);
         return;
     }
 
