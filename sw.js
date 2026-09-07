@@ -1,39 +1,44 @@
-var CACHE = 'alkogolik-v1';
-var CORE = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon.png'];
+const VERSION = 'v16';
+const CACHE_NAME = 'alkogolik-' + VERSION;
+const CORE = [
+  './',
+  'index.html',
+  'style.css',
+  'app.js',
+  'manifest.json',
+  'icon.png'
+];
 
-self.addEventListener('install', function (e) {
-  e.waitUntil(
-    caches.open(CACHE).then(function (c) {
-      return Promise.all(CORE.map(function (u) { return c.add(u).catch(function () {}); }));
-    }).then(function () { return self.skipWaiting(); })
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(CORE))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('activate', function (e) {
-  e.waitUntil(
-    caches.keys().then(function (ks) {
-      return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
-    }).then(function () { return self.clients.claim(); })
-  );
-});
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
 
-self.addEventListener('fetch', function (e) {
-  if (e.request.method !== 'GET') return;
-  var url = new URL(e.request.url);
-  if (url.origin !== self.location.origin) return;
-
-  e.respondWith(
-    caches.match(e.request).then(function (cached) {
-      var network = fetch(e.request, { cache: 'no-store' }).then(function (r) {
-        if (r && r.ok) {
-          var copy = r.clone();
-          caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        if (response.ok && (event.request.url.startsWith(self.location.origin) ||
+            event.request.url.includes('fonts.g'))) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
         }
-        return r;
-      }).catch(function () { return null; });
-
-      if (cached) return cached;
-      return network.then(function (r) { return r || caches.match('./index.html'); });
-    })
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then(cached => cached || caches.match('index.html'))
+      )
   );
 });
