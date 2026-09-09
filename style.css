@@ -19,7 +19,7 @@ body {
     background: var(--bg);
     color: var(--text);
     margin: 0;
-    padding-bottom: 0px;
+    padding-bottom: 85px;
 }
 
 button, input { font-family: inherit; }
@@ -27,12 +27,7 @@ button, input { font-family: inherit; }
 .screen { display: none; }
 .screen.active { display: block; }
 
-.container {
-    padding: 20px 16px 95px;
-    max-width: 600px;
-    margin: 0 auto;
-    box-sizing: border-box;
-}
+.container { padding: 20px 16px; max-width: 600px; margin: 0 auto; }
 
 h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02em; }
 
@@ -587,34 +582,4 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-bottom: 8px solid var(--tile);
-}
-/* Главный экран: ровно по высоте, без лишней прокрутки */
-#screen-home .container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 70px);
-    height: calc(100dvh - 70px);
-    padding-top: 14px;
-    padding-bottom: 10px;
-    overflow-y: auto;
-}
-
-#screen-home .money-block { padding: 10px; }
-
-#screen-home .month-card { padding: 12px; margin-bottom: 8px; }
-
-#screen-home .mascot-block {
-    margin-top: auto;
-    flex-shrink: 0;
-    gap: 8px;
-}
-
-#screen-home .mascot-wrap {
-    width: min(150px, 18vh);
-    width: min(150px, 18dvh);
-}
-
-#screen-home .mascot-bubble {
-    padding: 8px 14px;
-    font-size: 0.85rem;
 }
