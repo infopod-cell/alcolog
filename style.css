@@ -19,7 +19,7 @@ body {
     background: var(--bg);
     color: var(--text);
     margin: 0;
-    padding-bottom: 85px;
+    padding-bottom: 0px;
 }
 
 button, input { font-family: inherit; }
