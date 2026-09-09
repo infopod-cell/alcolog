@@ -645,12 +645,13 @@ if ('serviceWorker' in navigator) {
     if (hadController) window.location.reload();
   });
 }
+
 // ========== МУЖИЧОК-КОМПАНЬОН ==========
 
 const PHRASES = {
     today: [
         'Записано. Главное — остановиться, пока весело.',
-        'План на день выполнен. Печень уведомлена.',
+        'План на день выполнен. Печень рада.',
         'Пиво — не суп, но в зачёт пошло.',
         'Кружка опустела, история осталась.',
         'Учтено. Ни капля не потеряна для истории.',
@@ -660,7 +661,7 @@ const PHRASES = {
     heavy: [
         'Масштабно. Завтра рекомендую воду и подвиги.',
         'Это уже сюжет для внуков. Записал.',
-        'Сегодня ты пил как легендарный персонаж.',
+        'Сегодня ты пил как легенда.',
         'Печень попросила выходной. Я передал.',
         'Такие дни в годовой статистике пишутся золотыми буквами.'
     ],
@@ -673,14 +674,53 @@ const PHRASES = {
         'Энергетик поверх? Двойной привет этой ночи.'
     ],
     sober1: [
-        'День без пива — организм уже удивился.',
-        'Первый день держишься. Кружка начала нервничать.',
-        'Сутки без пива. Это рекорд сезона или разминка?'
+        'Ну ничего себе, сутки без алкоголя! Организм в лёгком шоке, но держится.',
+        'Первый день не бухаешь. Молодец! Я тихо горжусь, вслух не скажу.',
+        'Сутки трезвые. Начало положено — а это уже половина дела.'
     ],
-    soberFew: [
-        'Три дня?! Пиво проверяет, жив ли ты.',
-        'Серия растёт. Тихо, спугнёшь.',
-        'Держишься? Держись. Я рядом, я тоже терплю.'
+    sober2: [
+        'Второй день без бухла. Втягиваешься? То ли ещё будет.',
+        'Два дня не пьёшь. Слушай, да ты у нас волевой, оказывается.',
+        'Вторые сутки трезвые. Организм начал подозревать, что это не шутка.'
+    ],
+    sober3: [
+        'Третий день не бухаешь! Всё, это уже система, а не случайность.',
+        'Трое суток без алкоголя. Уважаю. Сейчас серьёзно, без шуток.',
+        'Третий день трезвый! Голова-то какая ясная, а?'
+    ],
+    sober4: [
+        'Четвёртый день без бухла. И денег в кошельке прибавилось, и сил.',
+        'Четыре дня не пьёшь. Ты там это… не забывай собой гордиться иногда.',
+        'Четвёртые сутки трезвые. Организм сказал спасибо.'
+    ],
+    sober5: [
+        'Пятый день без алкоголя! Рука ведь уже не тянется, а? Вот это уровень.',
+        'Пять дней не бухаешь. Скоро неделя, прикинь? Ты уже почти там.',
+        'Пятые сутки трезвые. Спокойно, уверенно, по-взрослому. Красиво идёшь.'
+    ],
+    sober6: [
+        'Шестой день без бухла! Один шажок до недели — не спугни её.',
+        'Шесть дней не пьёшь. Я тут всем растрепал, какой ты у меня молодец.',
+        'Шестые сутки трезвые. Завтра неделя — будешь вообще герой.'
+    ],
+    week: [
+        'НЕДЕЛЯ! Ура-а-а! Семь дней без алкоголя — это по-настоящему круто.',
+        'Целая неделя трезвая! Обнимаю. Ты это честно заслужил.',
+        'Семь дней без бухла! Всё, ты машина. Я снимаю шляпу.'
+    ],
+    weekPlus: [
+        '{N} без алкоголя! Это уже не сила воли, это характер.',
+        '{N} трезвости! Ты только не забывай собой гордиться, ладно?',
+        '{N} без бухла. Снимаю шляпу. И кружку убираю подальше.'
+    ],
+    marathon2: [
+        'Второй день бухалова. Ну бывает, бывает. Главное — считаем честно.'
+    ],
+    marathon3: [
+        'Третий день подряд бухаешь. Организм намекает: может, передышку?'
+    ],
+    marathon4: [
+        '{N} подряд с алкоголем. Я не осуждаю, я рядом. Но водички попей, ладно?'
     ],
     lessMonth: [
         'В этом месяце пьёшь аккуратнее. Почти интеллигент.'
@@ -725,7 +765,35 @@ function pickPhrase(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function fillN(template, n) {
+    return template.replace('{N}', n + ' ' + daysWord(n));
+}
+
 let mascotOverride = null;
+
+// Серия трезвых дней, включая сегодня
+function countSoberStreak(now) {
+    const markerMap = getMarkerMap();
+    let n = 0;
+    for (let back = 0; back <= 365; back++) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - back);
+        if (markerMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())]) break;
+        n++;
+    }
+    return n;
+}
+
+// Серия дней подряд с алкоголем, включая сегодня
+function countDrinkStreak(now) {
+    const markerMap = getMarkerMap();
+    let n = 0;
+    for (let back = 0; back <= 365; back++) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - back);
+        if (!markerMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())]) break;
+        n++;
+    }
+    return n;
+}
 
 function renderMascot() {
     const el = document.getElementById('mascot-phrase');
@@ -744,6 +812,11 @@ function renderMascot() {
 
     // Сегодня что-то записано
     if (todayEntries.length) {
+        const drinkStreak = countDrinkStreak(now);
+        if (drinkStreak === 2) { el.textContent = pickPhrase(PHRASES.marathon2); return; }
+        if (drinkStreak === 3) { el.textContent = pickPhrase(PHRASES.marathon3); return; }
+        if (drinkStreak >= 4) { el.textContent = fillN(pickPhrase(PHRASES.marathon4), drinkStreak); return; }
+
         const todayLiters = todayEntries.reduce((s, e) => s + entryLiters(e), 0);
         const hasStrong = todayEntries.some(e => e.type === 'wine' || e.type === 'strong');
         const hasMixer = todayEntries.some(e => e.type === 'mixer');
@@ -755,21 +828,24 @@ function renderMascot() {
         return;
     }
 
-    // Серия трезвых дней подряд
-    const markerMap = getMarkerMap();
-    let streak = 0;
-    for (let back = 1; back <= 60; back++) {
-        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - back);
-        if (markerMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())]) break;
-        streak++;
-    }
-    if (streak >= 3) { el.textContent = pickPhrase(PHRASES.soberFew); return; }
-    if (streak >= 1) { el.textContent = pickPhrase(PHRASES.sober1); return; }
+    // Сегодня трезво: 70% — подбадривание по номеру дня, 30% — ситуативные шутки
+    const soberStreak = countSoberStreak(now);
 
-    // Начало нового месяца
+    if (Math.random() < 0.7) {
+        if (soberStreak <= 6) el.textContent = pickPhrase(PHRASES['sober' + soberStreak]);
+        else if (soberStreak === 7) el.textContent = pickPhrase(PHRASES.week);
+        else el.textContent = fillN(pickPhrase(PHRASES.weekPlus), soberStreak);
+        return;
+    }
+
+    if (now.getHours() < 12) { el.textContent = pickPhrase(PHRASES.morning); return; }
+    if (now.getHours() >= 23) { el.textContent = pickPhrase(PHRASES.night); return; }
+    if ((now.getDay() === 5 || now.getDay() === 6) && now.getHours() >= 17) {
+        el.textContent = pickPhrase(PHRASES.weekend);
+        return;
+    }
     if (now.getDate() <= 2) { el.textContent = pickPhrase(PHRASES.newmonth); return; }
 
-    // Сравнение с прошлым месяцем по деньгам
     const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const thisMoney = entries.reduce((s, e) => {
         const d = new Date(e.timestamp);
@@ -781,16 +857,6 @@ function renderMascot() {
     }, 0);
     if (thisMoney > 0 && prevMoney > 0) {
         el.textContent = thisMoney < prevMoney ? pickPhrase(PHRASES.lessMonth) : pickPhrase(PHRASES.moreMonth);
-        return;
-    }
-
-    // Время суток
-    if (now.getHours() < 12) { el.textContent = pickPhrase(PHRASES.morning); return; }
-    if (now.getHours() >= 23) { el.textContent = pickPhrase(PHRASES.night); return; }
-
-    // Пятница и суббота вечером
-    if ((now.getDay() === 5 || now.getDay() === 6) && now.getHours() >= 17) {
-        el.textContent = pickPhrase(PHRASES.weekend);
         return;
     }
 
