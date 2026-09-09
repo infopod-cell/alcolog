@@ -27,7 +27,12 @@ button, input { font-family: inherit; }
 .screen { display: none; }
 .screen.active { display: block; }
 
-.container { padding: 20px 16px; max-width: 600px; margin: 0 auto; }
+.container {
+    padding: 20px 16px 95px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
 
 h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02em; }
 
@@ -582,4 +587,21 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-bottom: 8px solid var(--tile);
+}
+/* Главный экран: ровно по высоте, без лишней прокрутки */
+#screen-home .container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 70px);
+    height: calc(100dvh - 70px);
+    padding-bottom: 10px;
+}
+
+#screen-home .mascot-block {
+    margin-top: auto;
+}
+
+#screen-home .mascot-wrap {
+    width: min(190px, 22vh);
+    width: min(190px, 22dvh);
 }
