@@ -594,14 +594,27 @@ h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 16px; letter-spacing: 0.02
     flex-direction: column;
     height: calc(100vh - 70px);
     height: calc(100dvh - 70px);
+    padding-top: 14px;
     padding-bottom: 10px;
+    overflow-y: auto;
 }
+
+#screen-home .money-block { padding: 10px; }
+
+#screen-home .month-card { padding: 12px; margin-bottom: 8px; }
 
 #screen-home .mascot-block {
     margin-top: auto;
+    flex-shrink: 0;
+    gap: 8px;
 }
 
 #screen-home .mascot-wrap {
-    width: min(190px, 22vh);
-    width: min(190px, 22dvh);
+    width: min(150px, 18vh);
+    width: min(150px, 18dvh);
+}
+
+#screen-home .mascot-bubble {
+    padding: 8px 14px;
+    font-size: 0.85rem;
 }
